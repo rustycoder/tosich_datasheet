@@ -1,8 +1,12 @@
 /**
  * PDF Generator Module
- * Handles live preview rendering and PDF generation via html2pdf.js
+ * Handles live preview rendering and PDF generation via html2canvas + jsPDF
  */
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+
+/** CSS pixels per millimeter at 96 DPI */
+const MM_TO_PX = 96 / 25.4;
 
 export class PDFGenerator {
   constructor(csvParser, templateEditor) {
@@ -12,6 +16,21 @@ export class PDFGenerator {
 
     this._bindElements();
     this._bindEvents();
+    this._initStagingRoot();
+  }
+
+  /**
+   * Persistent off-screen root — reusing it avoids append/remove flicker per page
+   */
+  _initStagingRoot() {
+    this.stagingRoot = document.getElementById('pdf-staging-root');
+    if (!this.stagingRoot) {
+      this.stagingRoot = document.createElement('div');
+      this.stagingRoot.id = 'pdf-staging-root';
+      this.stagingRoot.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(this.stagingRoot);
+    }
+    this._exportContainer = null;
   }
 
   _bindElements() {
@@ -230,7 +249,7 @@ export class PDFGenerator {
   }
 
   /**
-   * Get page size dimensions
+   * Get page size dimensions (mm)
    */
   _getPageFormat() {
     const size = this.pageSizeSelect.value;
@@ -251,18 +270,124 @@ export class PDFGenerator {
   }
 
   /**
+   * Printable area inside margins, in mm and px (for capture + PDF placement)
+   */
+  _getExportLayout(marginMm) {
+    const { width: pageWidthMm, height: pageHeightMm } = this._getPageFormat();
+    const contentWidthMm = pageWidthMm - marginMm * 2;
+    const contentHeightMm = pageHeightMm - marginMm * 2;
+
+    return {
+      pageWidthMm,
+      pageHeightMm,
+      marginMm,
+      contentWidthMm,
+      contentHeightMm,
+      contentWidthPx: Math.round(contentWidthMm * MM_TO_PX),
+      contentHeightPx: Math.round(contentHeightMm * MM_TO_PX),
+    };
+  }
+
+  /**
    * Helper to wait for all images in a container to load/decode
    */
-  _waitForImages(container) {
+  async _waitForImages(container) {
     const images = Array.from(container.querySelectorAll('img'));
-    const promises = images.map((img) => {
-      if (img.complete) return Promise.resolve();
-      return new Promise((resolve) => {
-        img.onload = resolve;
-        img.onerror = resolve;
-      });
+    await Promise.all(
+      images.map(async (img) => {
+        if (img.complete && img.naturalWidth > 0) return;
+        try {
+          if (img.decode) await img.decode();
+        } catch {
+          await new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }
+      })
+    );
+  }
+
+  /**
+   * Build a single page DOM node sized to fill the printable area
+   */
+  _buildPageElement(rowData) {
+    const htmlTemplate = this.templateEditor.getHTML();
+    const cssTemplate = this.templateEditor.getCSS();
+    const htmlContent = this._replacePlaceholders(htmlTemplate, rowData);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'pdf-page-wrapper';
+
+    const layoutStyle = document.createElement('style');
+    layoutStyle.textContent = `
+      .pdf-page-wrapper,
+      .pdf-page,
+      .pdf-page .datasheet-container {
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      .pdf-page .datasheet-container {
+        display: flex;
+        flex-direction: column;
+      }
+    `;
+    wrapper.appendChild(layoutStyle);
+
+    const styleTag = document.createElement('style');
+    styleTag.textContent = this._replacePlaceholders(cssTemplate, rowData);
+    wrapper.appendChild(styleTag);
+
+    const pageDiv = document.createElement('div');
+    pageDiv.className = 'pdf-page';
+    pageDiv.innerHTML = htmlContent;
+    wrapper.appendChild(pageDiv);
+
+    return wrapper;
+  }
+
+  /**
+   * Reuse a single off-screen container (avoids DOM churn flicker each page)
+   */
+  _getExportContainer(contentWidthPx, contentHeightPx) {
+    if (!this._exportContainer) {
+      this._exportContainer = document.createElement('div');
+      this._exportContainer.className = 'pdf-export-container';
+      this.stagingRoot.appendChild(this._exportContainer);
+    }
+    Object.assign(this._exportContainer.style, {
+      width: `${contentWidthPx}px`,
+      height: `${contentHeightPx}px`,
+      background: '#ffffff',
+      overflow: 'hidden',
     });
-    return Promise.all(promises);
+    this._exportContainer.replaceChildren();
+    return this._exportContainer;
+  }
+
+  _setExportProgress(current, total, message) {
+    this._pendingProgress = { current, total, message };
+    if (this._progressRaf) return;
+    this._progressRaf = requestAnimationFrame(() => {
+      this._progressRaf = null;
+      const p = this._pendingProgress;
+      if (!p) return;
+      if (p.message) this.progressText.textContent = p.message;
+      if (p.total > 0) {
+        this.progressFill.style.width = `${(p.current / p.total) * 90}%`;
+      }
+    });
+  }
+
+  /**
+   * Place captured content at margins, filling the full printable area
+   */
+  _addCanvasToPdf(pdf, imgData, layout) {
+    const { marginMm, contentWidthMm, contentHeightMm } = layout;
+    pdf.addImage(imgData, 'JPEG', marginMm, marginMm, contentWidthMm, contentHeightMm);
   }
 
   /**
@@ -281,124 +406,76 @@ export class PDFGenerator {
     }
 
     const totalRows = endRow - startRow + 1;
-    const margin = parseInt(this.marginSelect.value) || 10;
+    const marginMm = parseInt(this.marginSelect.value, 10) || 0;
     const filename = this.filenameInput.value.trim() || 'datasheet-output';
     const { format, orientation } = this._getPageFormat();
+    const layout = this._getExportLayout(marginMm);
 
-    // Show progress
+    // Show progress (disable transitions via body class to prevent flicker)
+    document.body.classList.add('pdf-exporting');
     this.progressSection.classList.remove('hidden');
     this.generateBtn.disabled = true;
     this.progressFill.style.width = '0%';
     this.progressText.textContent = `Preparing ${totalRows} page(s)...`;
 
+    const jsPdfFormat = format === 'a4' ? 'a4' : format === 'letter' ? 'letter' : 'legal';
+
     let container = null;
+    this._progressRaf = null;
     try {
-      // Build a combined container with all pages
-      container = document.createElement('div');
-      container.className = 'pdf-export-container';
-      container.style.position = 'fixed';
-      container.style.left = '0';
-      container.style.top = '0';
-      container.style.zIndex = '-9999';
-      container.style.opacity = '0';
-      container.style.pointerEvents = 'none';
+      const pdf = new jsPDF({
+        unit: 'mm',
+        format: jsPdfFormat,
+        orientation,
+      });
 
-      // Enforce layout width based on page format and orientation for scaling accuracy
-      const formatWidths = {
-        a4: 794,
-        letter: 816,
-        legal: 816,
+      const canvasOptions = {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: layout.contentWidthPx,
+        height: layout.contentHeightPx,
+        windowWidth: layout.contentWidthPx,
+        windowHeight: layout.contentHeightPx,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc) => {
+          clonedDoc.querySelectorAll('.pdf-export-container, .pdf-page-wrapper').forEach((el) => {
+            el.style.opacity = '1';
+            el.style.visibility = 'visible';
+          });
+        },
       };
-      let targetWidth = formatWidths[format] || 794;
-      if (orientation === 'landscape') {
-        const formatHeights = {
-          a4: 1122,
-          letter: 1056,
-          legal: 1344,
-        };
-        targetWidth = formatHeights[format] || 1122;
-      }
-      container.style.width = `${targetWidth}px`;
-
-      // Append to DOM so html2canvas can compute layouts and load images properly
-      document.body.appendChild(container);
 
       for (let i = startRow; i <= endRow; i++) {
         const rowData = this.csvParser.getRow(i);
-        const htmlTemplate = this.templateEditor.getHTML();
-        const cssTemplate = this.templateEditor.getCSS();
+        const pageIndex = i - startRow;
 
-        const htmlContent = this._replacePlaceholders(htmlTemplate, rowData);
+        this._setExportProgress(
+          pageIndex + 0.5,
+          totalRows,
+          `Rendering page ${pageIndex + 1} of ${totalRows}...`
+        );
 
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'pdf-page';
-        pageDiv.innerHTML = htmlContent;
-        container.appendChild(pageDiv);
+        container = this._getExportContainer(
+          layout.contentWidthPx,
+          layout.contentHeightPx
+        );
+        container.appendChild(this._buildPageElement(rowData));
 
-        // Apply CSS via style tag (only once)
-        if (i === startRow) {
-          const styleTag = document.createElement('style');
-          styleTag.textContent = this._replacePlaceholders(cssTemplate, rowData);
-          container.prepend(styleTag);
+        await this._waitForImages(container);
+
+        const canvas = await html2canvas(container, canvasOptions);
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+        if (pageIndex > 0) {
+          pdf.addPage(jsPdfFormat, orientation);
         }
-
-        const progress = ((i - startRow + 1) / totalRows) * 50;
-        this.progressFill.style.width = `${progress}%`;
-        this.progressText.textContent = `Building page ${i - startRow + 1} of ${totalRows}...`;
-
-        // Yield to keep UI responsive
-        await new Promise((r) => setTimeout(r, 0));
+        this._addCanvasToPdf(pdf, imgData, layout);
       }
 
-      this.progressText.textContent = 'Waiting for images to load...';
-      await this._waitForImages(container);
-
-      this.progressText.textContent = 'Generating PDF...';
-      this.progressFill.style.width = '60%';
-
-      // Generate PDF
-      const opt = {
-        margin: margin,
-        filename: `${filename}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-          onclone: (clonedDoc) => {
-            const clonedContainer = clonedDoc.querySelector('.pdf-export-container');
-            if (clonedContainer) {
-              clonedContainer.style.opacity = '1';
-              clonedContainer.style.visibility = 'visible';
-            }
-          }
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: format === 'a4' ? 'a4' : format === 'letter' ? 'letter' : 'legal',
-          orientation: orientation,
-        },
-        pagebreak: { mode: ['css', 'legacy'], avoid: '.pdf-page' },
-      };
-
-      // For multi-page: use page breaks
-      const wrapperStyle = document.createElement('style');
-      wrapperStyle.textContent = `
-        .pdf-page {
-          width: 100%;
-          box-sizing: border-box;
-          page-break-after: always;
-          page-break-inside: avoid;
-        }
-        .pdf-page:last-child {
-          page-break-after: auto;
-        }
-      `;
-      container.prepend(wrapperStyle);
-
-      await html2pdf().set(opt).from(container).save();
+      pdf.save(`${filename}.pdf`);
 
       this.progressFill.style.width = '100%';
       this.progressText.textContent = 'PDF generated successfully!';
@@ -420,9 +497,14 @@ export class PDFGenerator {
         })
       );
     } finally {
-      if (container && container.parentNode) {
-        container.parentNode.removeChild(container);
+      if (this._exportContainer) {
+        this._exportContainer.replaceChildren();
       }
+      if (this._progressRaf) {
+        cancelAnimationFrame(this._progressRaf);
+        this._progressRaf = null;
+      }
+      document.body.classList.remove('pdf-exporting');
       this.generateBtn.disabled = false;
       setTimeout(() => {
         this.progressSection.classList.add('hidden');

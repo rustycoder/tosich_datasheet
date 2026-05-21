@@ -797,6 +797,31 @@ body {
   transition: width 0.3s ease;
 }
 
+/* Hidden PDF capture staging — avoids DOM insert/remove flicker */
+#pdf-staging-root {
+  position: fixed;
+  left: -200vw;
+  top: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+  contain: strict;
+  isolation: isolate;
+}
+
+body.pdf-exporting {
+  overflow: hidden;
+}
+
+body.pdf-exporting * {
+  transition: none !important;
+  animation: none !important;
+}
+
+body.pdf-exporting .progress-fill {
+  transition: none !important;
+}
+
 .progress-text {
   margin-top: 8px;
   font-size: 0.78rem;
