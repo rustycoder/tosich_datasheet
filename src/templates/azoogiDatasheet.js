@@ -96,11 +96,10 @@ html, body {
 }
 
 .params-title {
-  font-size: 11pt;
-  font-weight: 800;
+  font-size: 9pt;
+  font-weight: 700;
   color: #111;
   margin: 0 0 2mm;
-  letter-spacing: .3px;
 }
 
 table.params {
@@ -130,14 +129,15 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
   border-radius: 2px;
   display: block;
 }
+  
 .dim-title {
   text-align: center;
   margin: 6mm 0 3mm;
-  font-size: 12pt;
-  font-weight: 800;
+  font-size: 9pt;
+  font-weight: 700;
   color: #111;
-  letter-spacing: .5px;
 }
+
 .dim-img {
   width: 80%;
   max-height: 55mm;
@@ -197,7 +197,7 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
 
       <div>
         <p class="desc">{{DESCRIPTION}}</p>
-        <p class="params-title">LUMINARIE PARAMETERS</p>
+        <p class="params-title">SPECIFICATIONS</p>
         {{SPECS}}
       </div>
 
