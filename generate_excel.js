@@ -160,11 +160,11 @@ async function generate() {
 
   // Setup columns
   worksheet.columns = [
-    { header: 'Title', key: 'title', width: 30 },
-    { header: 'Picture', key: 'picture', width: 25 },
-    { header: 'Description', key: 'description', width: 50 },
-    { header: 'Dimension', key: 'dimension', width: 25 },
-    { header: 'Specification', key: 'specification', width: 40 }
+    { header: 'NAME', key: 'NAME', width: 30 },
+    { header: 'IMAGE', key: 'IMAGE', width: 25 },
+    { header: 'DESCRIPTION', key: 'DESCRIPTION', width: 50 },
+    { header: 'DIAGRAM', key: 'DIAGRAM', width: 25 },
+    { header: 'SPECS', key: 'SPECS', width: 40 }
   ];
 
   // Set header styling
@@ -173,46 +173,46 @@ async function generate() {
 
   const dummyData = [
     {
-      title: 'Azoogi LED Downlight 10W',
-      description: 'High efficiency 10W LED recessed ceiling downlight with die-cast aluminum heat sink. Features premium Philips LEDs and clean white finish.',
-      specification: 'Power: 10W\nLumen: 900lm\nCCT: 4000K\nCRI: >80\nBeam Angle: 60°\nCutout: 95mm\nIP Rating: IP44\nWarranty: 3 Years'
+      NAME: 'Azoogi LED Downlight 10W',
+      DESCRIPTION: 'High efficiency 10W LED recessed ceiling downlight with die-cast aluminum heat sink. Features premium Philips LEDs and clean white finish.',
+      SPECS: 'Power: 10W\nLumen: 900lm\nCCT: 4000K\nCRI: >80\nBeam Angle: 60°\nCutout: 95mm\nIP Rating: IP44\nWarranty: 3 Years'
     },
     {
-      title: 'Azoogi LED Downlight 12W',
-      description: 'Architectural grade 12W recessed spotlight featuring high color rendering index and deep dimming functionality. Ideal for residential and commercial lighting.',
-      specification: 'Power: 12W\nLumen: 1100lm\nCCT: 3000K\nCRI: >90\nBeam Angle: 45°\nCutout: 95mm\nIP Rating: IP44\nWarranty: 3 Years'
+      NAME: 'Azoogi LED Downlight 12W',
+      DESCRIPTION: 'Architectural grade 12W recessed spotlight featuring high color rendering index and deep dimming functionality. Ideal for residential and commercial lighting.',
+      SPECS: 'Power: 12W\nLumen: 1100lm\nCCT: 3000K\nCRI: >90\nBeam Angle: 45°\nCutout: 95mm\nIP Rating: IP44\nWarranty: 3 Years'
     },
     {
-      title: 'Azoogi LED Downlight 15W',
-      description: 'Super bright 15W LED downlight designed for high ceiling applications and task lighting. Commercial grade driver included.',
-      specification: 'Power: 15W\nLumen: 1450lm\nCCT: 5000K\nCRI: >80\nBeam Angle: 90°\nCutout: 125mm\nIP Rating: IP20\nWarranty: 5 Years'
+      NAME: 'Azoogi LED Downlight 15W',
+      DESCRIPTION: 'Super bright 15W LED downlight designed for high ceiling applications and task lighting. Commercial grade driver included.',
+      SPECS: 'Power: 15W\nLumen: 1450lm\nCCT: 5000K\nCRI: >80\nBeam Angle: 90°\nCutout: 125mm\nIP Rating: IP20\nWarranty: 5 Years'
     },
     {
-      title: 'Azoogi LED Downlight 8W Slim',
-      description: 'Ultra-thin 8W profile LED downlight perfect for shallow ceiling voids. Comes with integrated driver and quick connector.',
-      specification: 'Power: 8W\nLumen: 720lm\nCCT: 4000K\nCRI: >80\nBeam Angle: 120°\nCutout: 90mm\nIP Rating: IP44\nWarranty: 2 Years'
+      NAME: 'Azoogi LED Downlight 8W Slim',
+      DESCRIPTION: 'Ultra-thin 8W profile LED downlight perfect for shallow ceiling voids. Comes with integrated driver and quick connector.',
+      SPECS: 'Power: 8W\nLumen: 720lm\nCCT: 4000K\nCRI: >80\nBeam Angle: 120°\nCutout: 90mm\nIP Rating: IP44\nWarranty: 2 Years'
     },
     {
-      title: 'Azoogi LED Downlight 18W High Output',
-      description: 'High lumen output 18W downlight for retail and display spaces. Adjustable tilt mechanism for wall washing and focal illumination.',
-      specification: 'Power: 18W\nLumen: 1800lm\nCCT: 4000K\nCRI: >85\nBeam Angle: 36°\nCutout: 125mm\nIP Rating: IP20\nWarranty: 5 Years'
+      NAME: 'Azoogi LED Downlight 18W High Output',
+      DESCRIPTION: 'High lumen output 18W downlight for retail and display spaces. Adjustable tilt mechanism for wall washing and focal illumination.',
+      SPECS: 'Power: 18W\nLumen: 1800lm\nCCT: 4000K\nCRI: >85\nBeam Angle: 36°\nCutout: 125mm\nIP Rating: IP20\nWarranty: 5 Years'
     }
   ];
 
   // Add rows & set cell styles
   dummyData.forEach((data, index) => {
     const row = worksheet.addRow({
-      title: data.title,
-      picture: '', // placeholder for floating image
-      description: data.description,
-      dimension: '', // placeholder for floating image
-      specification: data.specification
+      NAME: data.NAME,
+      IMAGE: '', // placeholder for floating image
+      DESCRIPTION: data.DESCRIPTION,
+      DIAGRAM: '', // placeholder for floating image
+      SPECS: data.SPECS
     });
 
     row.height = 100;
-    row.getCell('description').alignment = { wrapText: true, vertical: 'middle' };
-    row.getCell('specification').alignment = { wrapText: true, vertical: 'middle' };
-    row.getCell('title').alignment = { vertical: 'middle' };
+    row.getCell('DESCRIPTION').alignment = { wrapText: true, vertical: 'middle' };
+    row.getCell('SPECS').alignment = { wrapText: true, vertical: 'middle' };
+    row.getCell('NAME').alignment = { vertical: 'middle' };
   });
 
   // Generate image buffers dynamically in memory

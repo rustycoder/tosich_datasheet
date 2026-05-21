@@ -65,8 +65,8 @@ class App {
     // 2. Load mock sample data inside the Excel parser
     this.csvParser.loadSampleData(templateKey);
 
-    // 3. Navigate to design step
-    this._goToStep(2);
+    // 3. Navigate to export step
+    this._goToStep(3);
 
     // Toast notification
     window.dispatchEvent(
@@ -92,9 +92,9 @@ class App {
       });
     });
 
-    // Step 1 → Step 2
+    // Step 1 → Step 3
     document.getElementById('btn-to-design').addEventListener('click', () => {
-      this._goToStep(2);
+      this._goToStep(3);
     });
 
     // Step 2 → Step 1 (back)
@@ -203,7 +203,7 @@ class App {
       
       const subtextEl = this.csvParser.dropzone.querySelector('.dropzone-subtext');
       if (subtextEl) {
-        subtextEl.innerHTML = `Continue to Design, or drop a new file to replace it`;
+        subtextEl.innerHTML = `Continue to Export, or drop a new file to replace it`;
       }
       
       console.log('Successfully loaded default Excel sample sheet on startup');

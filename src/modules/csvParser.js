@@ -333,29 +333,28 @@ export class ExcelParser {
     let headers = [];
     let rows = [];
     this.imageColumns.clear();
-
     if (templateKey === 'datasheet' || templateKey === 'default') {
-      headers = ['Title', 'Picture', 'Description', 'Dimension', 'Specification'];
-      this.imageColumns.add('picture');
-      this.imageColumns.add('dimension');
+      headers = ['NAME', 'IMAGE', 'DESCRIPTION', 'DIAGRAM', 'SPECS'];
+      this.imageColumns.add('image');
+      this.imageColumns.add('diagram');
       
       const samplePicture = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="%23f8fafc" stroke="%23e2e8f0" stroke-width="2"/><circle cx="150" cy="80" r="45" fill="%23f1f5f9" stroke="%23139B58" stroke-width="4"/><circle cx="150" cy="80" r="25" fill="%23ffffff"/><path d="M150 25 L150 5 M150 135 L150 155 M95 80 L75 80 M205 80 L225 80" stroke="%23139B58" stroke-width="3"/><text x="150" y="165" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="%231e293b" text-anchor="middle">Azoogi Premium LED Downlight</text></svg>`;
       const sampleDimension = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="%23f8fafc" stroke="%23e2e8f0" stroke-width="2"/><line x1="50" y1="120" x2="250" y2="120" stroke="%2364748b" stroke-width="2" stroke-dasharray="4 4"/><line x1="50" y1="105" x2="50" y2="135" stroke="%2364748b" stroke-width="2"/><line x1="250" y1="105" x2="250" y2="135" stroke="%2364748b" stroke-width="2"/><text x="150" y="95" font-family="monospace" font-size="11" fill="%23475569" text-anchor="middle">Cutout Diameter: 90mm</text><circle cx="150" cy="55" r="8" fill="none" stroke="%23475569" stroke-width="1.5"/><path d="M142 55 L158 55 M150 47 L150 63" stroke="%23475569" stroke-width="1.5"/><text x="150" y="165" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="%231e293b" text-anchor="middle">Technical Dimension Drawing</text></svg>`;
-
+ 
       rows = [
         {
-          Title: 'Azoogi LED Downlight 12W',
-          Picture: samplePicture,
-          Description: 'The Azoogi 12W LED Downlight is a premium recessed luminaire designed for exceptional performance, modern aesthetics, and energy efficiency. It features high CRI (>80) for vibrant, accurate colors, a wide 90-degree beam angle for uniform light distribution, and a durable IP44-rated design. It is fully dimmable and matches standard cutouts, making it perfect for residential, retail, and commercial spaces.',
-          Dimension: sampleDimension,
-          Specification: 'Power: 12W\nInput Voltage: AC 240V\nLumen Output: 960 lm\nColor Temp: 3000K / 4000K / 5000K\nBeam Angle: 90°\nCRI: >80\nDimmable: Yes (Triac)\nIP Rating: IP44\nCutout Size: Ø 90mm\nLifetime: 50,000 Hours\nWarranty: 3 Years'
+          NAME: 'Azoogi LED Downlight 12W',
+          IMAGE: samplePicture,
+          DESCRIPTION: 'The Azoogi 12W LED Downlight is a premium recessed luminaire designed for exceptional performance, modern aesthetics, and energy efficiency. It features high CRI (>80) for vibrant, accurate colors, a wide 90-degree beam angle for uniform light distribution, and a durable IP44-rated design. It is fully dimmable and matches standard cutouts, making it perfect for residential, retail, and commercial spaces.',
+          DIAGRAM: sampleDimension,
+          SPECS: 'Power: 12W\nInput Voltage: AC 240V\nLumen Output: 960 lm\nColor Temp: 3000K / 4000K / 5000K\nBeam Angle: 90°\nCRI: >80\nDimmable: Yes (Triac)\nIP Rating: IP44\nCutout Size: Ø 90mm\nLifetime: 50,000 Hours\nWarranty: 3 Years'
         },
         {
-          Title: 'Azoogi LED Downlight 15W',
-          Picture: samplePicture.replace('12W', '15W').replace('45', '50').replace('25', '28'),
-          Description: 'A high-powered 15W LED Downlight designed for higher ceilings and premium commercial spaces. It provides up to 1300 lumens of bright, comfortable light with excellent color rendering and triac dimming capability.',
-          Dimension: sampleDimension.replace('90mm', '110mm').replace('50', '40').replace('250', '260'),
-          Specification: 'Power: 15W\nInput Voltage: AC 240V\nLumen Output: 1300 lm\nColor Temp: 4000K\nBeam Angle: 90°\nCRI: >80\nDimmable: Yes (Triac)\nIP Rating: IP44\nCutout Size: Ø 110mm\nLifetime: 50,000 Hours\nWarranty: 3 Years'
+          NAME: 'Azoogi LED Downlight 15W',
+          IMAGE: samplePicture.replace('12W', '15W').replace('45', '50').replace('25', '28'),
+          DESCRIPTION: 'A high-powered 15W LED Downlight designed for higher ceilings and premium commercial spaces. It provides up to 1300 lumens of bright, comfortable light with excellent color rendering and triac dimming capability.',
+          DIAGRAM: sampleDimension.replace('90mm', '110mm').replace('50', '40').replace('250', '260'),
+          SPECS: 'Power: 15W\nInput Voltage: AC 240V\nLumen Output: 1300 lm\nColor Temp: 4000K\nBeam Angle: 90°\nCRI: >80\nDimmable: Yes (Triac)\nIP Rating: IP44\nCutout Size: Ø 110mm\nLifetime: 50,000 Hours\nWarranty: 3 Years'
         }
       ];
     } else if (templateKey === 'certificate') {

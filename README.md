@@ -71,9 +71,10 @@ npm run preview
   - **Cell data** (text, numbers, dates)
   - **Embedded images** (converted to base64 for use in templates)
 - Preview your data in the table — image columns show thumbnails with a 🖼️ indicator
-- Click **"Continue to Design"**
+- Click **"Continue to Export"** to navigate directly to the PDF Export view.
+- Note: You can still customize or design the template at any time by clicking "Back to Design" in the Export view, or clicking "2" in the header navigation.
 
-### Step 2: Design Template
+### Step 2: Design Template (Optional)
 
 - Write your HTML template in the code editor
 - Switch to the **CSS** tab to style your template
