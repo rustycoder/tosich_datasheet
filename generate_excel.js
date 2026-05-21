@@ -152,7 +152,7 @@ function drawDimensionImage(width, height) {
   return compressAndBuildPng(width, height, imgData);
 }
 
-const outputPath = './sample-datasheet.xlsx';
+const outputPath = './public/sample-datasheet.xlsx';
 
 async function generate() {
   const workbook = new ExcelJS.Workbook();
@@ -160,6 +160,7 @@ async function generate() {
 
   // Setup columns
   worksheet.columns = [
+    { header: 'CODE', key: 'CODE', width: 18 },
     { header: 'NAME', key: 'NAME', width: 30 },
     { header: 'IMAGE', key: 'IMAGE', width: 25 },
     { header: 'DESCRIPTION', key: 'DESCRIPTION', width: 50 },
@@ -173,26 +174,31 @@ async function generate() {
 
   const dummyData = [
     {
+      CODE: 'AZ-DL-10W',
       NAME: 'Azoogi LED Downlight 10W',
       DESCRIPTION: 'High efficiency 10W LED recessed ceiling downlight with die-cast aluminum heat sink. Features premium Philips LEDs and clean white finish.',
       SPECS: 'Power: 10W\nLumen: 900lm\nCCT: 4000K\nCRI: >80\nBeam Angle: 60°\nCutout: 95mm\nIP Rating: IP44\nWarranty: 3 Years'
     },
     {
-      NAME: 'Azoogi LED Downlight 12W',
+      CODE: 'AZ-LLL001',
+      NAME: 'IP65 Series',
       DESCRIPTION: 'Architectural grade 12W recessed spotlight featuring high color rendering index and deep dimming functionality. Ideal for residential and commercial lighting.',
       SPECS: 'Power: 12W\nLumen: 1100lm\nCCT: 3000K\nCRI: >90\nBeam Angle: 45°\nCutout: 95mm\nIP Rating: IP44\nWarranty: 3 Years'
     },
     {
+      CODE: 'AZ-DL-15W',
       NAME: 'Azoogi LED Downlight 15W',
       DESCRIPTION: 'Super bright 15W LED downlight designed for high ceiling applications and task lighting. Commercial grade driver included.',
       SPECS: 'Power: 15W\nLumen: 1450lm\nCCT: 5000K\nCRI: >80\nBeam Angle: 90°\nCutout: 125mm\nIP Rating: IP20\nWarranty: 5 Years'
     },
     {
+      CODE: 'AZ-DL-08S',
       NAME: 'Azoogi LED Downlight 8W Slim',
       DESCRIPTION: 'Ultra-thin 8W profile LED downlight perfect for shallow ceiling voids. Comes with integrated driver and quick connector.',
       SPECS: 'Power: 8W\nLumen: 720lm\nCCT: 4000K\nCRI: >80\nBeam Angle: 120°\nCutout: 90mm\nIP Rating: IP44\nWarranty: 2 Years'
     },
     {
+      CODE: 'AZ-DL-18H',
       NAME: 'Azoogi LED Downlight 18W High Output',
       DESCRIPTION: 'High lumen output 18W downlight for retail and display spaces. Adjustable tilt mechanism for wall washing and focal illumination.',
       SPECS: 'Power: 18W\nLumen: 1800lm\nCCT: 4000K\nCRI: >85\nBeam Angle: 36°\nCutout: 125mm\nIP Rating: IP20\nWarranty: 5 Years'
@@ -202,6 +208,7 @@ async function generate() {
   // Add rows & set cell styles
   dummyData.forEach((data, index) => {
     const row = worksheet.addRow({
+      CODE: data.CODE,
       NAME: data.NAME,
       IMAGE: '', // placeholder for floating image
       DESCRIPTION: data.DESCRIPTION,
@@ -212,6 +219,7 @@ async function generate() {
     row.height = 100;
     row.getCell('DESCRIPTION').alignment = { wrapText: true, vertical: 'middle' };
     row.getCell('SPECS').alignment = { wrapText: true, vertical: 'middle' };
+    row.getCell('CODE').alignment = { vertical: 'middle' };
     row.getCell('NAME').alignment = { vertical: 'middle' };
   });
 
@@ -230,21 +238,19 @@ async function generate() {
     extension: 'png'
   });
 
-  // Embed images in worksheet rows (Col B = Picture, Col D = Dimension)
+  // Embed images in worksheet rows (Col C = IMAGE, Col E = DIAGRAM)
   for (let i = 0; i < dummyData.length; i++) {
     const rowIdx = i + 1; // Native row 1 = excel row 2
 
-    // Product Picture (Col B = nativeCol 1)
     worksheet.addImage(productImgId, {
-      tl: { col: 1, row: rowIdx },
-      br: { col: 2, row: rowIdx + 1 },
+      tl: { col: 2, row: rowIdx },
+      br: { col: 3, row: rowIdx + 1 },
       editAs: 'oneCell'
     });
 
-    // Dimension Picture (Col D = nativeCol 3)
     worksheet.addImage(dimensionImgId, {
-      tl: { col: 3, row: rowIdx },
-      br: { col: 4, row: rowIdx + 1 },
+      tl: { col: 4, row: rowIdx },
+      br: { col: 5, row: rowIdx + 1 },
       editAs: 'oneCell'
     });
   }

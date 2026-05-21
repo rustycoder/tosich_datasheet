@@ -29,6 +29,12 @@ class App {
     // When Excel data is loaded, pass headers to the template editor
     this.csvParser.onDataLoaded = (headers, rows) => {
       this.templateEditor.setHeaders(headers);
+      if (this.currentStep >= 2) {
+        this.pdfGenerator.updatePreview();
+      }
+      if (this.currentStep === 3) {
+        this.pdfGenerator.updateExportPreview();
+      }
     };
 
     // When template content changes, update live preview
@@ -140,14 +146,26 @@ class App {
 
     // Trigger preview updates when navigating
     if (step === 2) {
-      // Slight delay to let CodeMirror render
+      const key = this.templateEditor.currentTemplateKey;
+      if (
+        (key === 'datasheet' || key === 'default') &&
+        !this.templateEditor.getHTML().includes('{{CODE}}')
+      ) {
+        this.templateEditor.selectTemplate(key);
+      }
       setTimeout(() => {
         this.pdfGenerator.updatePreview();
-      }, 100);
+        requestAnimationFrame(() => {
+          this.pdfGenerator._fitPreviewMount(this.pdfGenerator.previewMount);
+        });
+      }, 50);
     } else if (step === 3) {
       setTimeout(() => {
         this.pdfGenerator.updateExportPreview();
-      }, 100);
+        requestAnimationFrame(() => {
+          this.pdfGenerator._fitPreviewMount(this.pdfGenerator.exportPreviewMount);
+        });
+      }, 50);
     }
   }
 
@@ -190,8 +208,11 @@ class App {
       // 3. Load spreadsheet using csvParser
       await this.csvParser._handleFile(file);
 
-      // 4. Force default template to 'datasheet'
+      // 4. Load latest built-in datasheet template (includes {{CODE}} in title)
       this.templateEditor.selectTemplate('datasheet');
+      if (this.currentStep >= 2) {
+        this.pdfGenerator.updatePreview();
+      }
 
       // 5. Restore dropzone visibility (allowing replacement) and update instruction text
       this.csvParser.dropzone.style.display = '';

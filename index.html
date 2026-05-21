@@ -255,14 +255,26 @@
                   </svg>
                   Live Preview
                 </h3>
-                <div class="preview-controls">
-                  <button class="btn-icon" id="btn-prev-row" title="Previous row" disabled>‹</button>
-                  <span id="preview-row-indicator">Row 1</span>
-                  <button class="btn-icon" id="btn-next-row" title="Next row">›</button>
+                <div class="preview-nav" aria-label="Row navigation">
+                  <button type="button" class="preview-nav-btn" id="btn-prev-row" title="Previous row" disabled>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <div class="preview-nav-meta">
+                    <span class="preview-nav-label">Row</span>
+                    <span class="preview-nav-badge" id="preview-row-indicator">1 / 1</span>
+                  </div>
+                  <button type="button" class="preview-nav-btn" id="btn-next-row" title="Next row">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <span class="preview-format-tag">A4</span>
                 </div>
               </div>
               <div class="preview-frame-wrapper">
-                <iframe id="preview-frame" sandbox="allow-same-origin"></iframe>
+                <div class="preview-mount" id="preview-mount" aria-label="Datasheet preview"></div>
               </div>
             </div>
           </div>
@@ -364,14 +376,26 @@
           <div class="panel-card export-preview-card">
             <div class="panel-header">
               <h3>Preview</h3>
-              <div class="preview-controls">
-                <button class="btn-icon" id="btn-export-prev-row" title="Previous row" disabled>‹</button>
-                <span id="export-row-indicator">Row 1</span>
-                <button class="btn-icon" id="btn-export-next-row" title="Next row">›</button>
+              <div class="preview-nav" aria-label="Row navigation">
+                <button type="button" class="preview-nav-btn" id="btn-export-prev-row" title="Previous row" disabled>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <div class="preview-nav-meta">
+                  <span class="preview-nav-label">Row</span>
+                  <span class="preview-nav-badge" id="export-row-indicator">1 / 1</span>
+                </div>
+                <button type="button" class="preview-nav-btn" id="btn-export-next-row" title="Next row">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <span class="preview-format-tag">A4</span>
               </div>
             </div>
             <div class="preview-frame-wrapper">
-              <iframe id="export-preview-frame" sandbox="allow-same-origin"></iframe>
+              <div class="preview-mount" id="export-preview-mount" aria-label="Datasheet preview"></div>
             </div>
           </div>
         </div>

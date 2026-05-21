@@ -8,6 +8,37 @@ import { jsPDF } from "jspdf";
 /** CSS pixels per millimeter at 96 DPI */
 const MM_TO_PX = 96 / 25.4;
 
+const A4_WIDTH_PX = Math.round(210 * MM_TO_PX);
+const A4_HEIGHT_PX = Math.round(297 * MM_TO_PX);
+
+/** Overrides inside preview shadow root (template html/body rules must not leak to the app) */
+const PREVIEW_SHADOW_CSS = `
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: transparent;
+}
+.preview-sheet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.page {
+  flex-shrink: 0;
+  margin: 0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  border-radius: 2px;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+  will-change: transform;
+}
+`;
+
 export class PDFGenerator {
   constructor(csvParser, templateEditor) {
     this.csvParser = csvParser;
@@ -17,6 +48,72 @@ export class PDFGenerator {
     this._bindElements();
     this._bindEvents();
     this._initStagingRoot();
+    this._bindPreviewResize();
+  }
+
+  _bindPreviewResize() {
+    this._onPreviewResize = () => {
+      this._fitPreviewMount(this.previewMount);
+      this._fitPreviewMount(this.exportPreviewMount);
+    };
+    window.addEventListener("resize", this._onPreviewResize);
+
+    if (typeof ResizeObserver !== "undefined") {
+      this._previewResizeObserver = new ResizeObserver(this._onPreviewResize);
+      for (const mount of [this.previewMount, this.exportPreviewMount]) {
+        const wrapper = mount?.parentElement;
+        if (wrapper?.classList.contains("preview-frame-wrapper")) {
+          this._previewResizeObserver.observe(wrapper);
+        }
+      }
+    }
+  }
+
+  _formatRowIndicator(currentIndex, rowCount) {
+    return `${currentIndex + 1} / ${rowCount}`;
+  }
+
+  _updatePreviewNav(rowCount) {
+    const text = this._formatRowIndicator(this.currentPreviewRow, rowCount);
+    const atStart = this.currentPreviewRow === 0;
+    const atEnd = this.currentPreviewRow >= rowCount - 1;
+
+    if (this.rowIndicator) this.rowIndicator.textContent = text;
+    if (this.prevRowBtn) this.prevRowBtn.disabled = atStart;
+    if (this.nextRowBtn) this.nextRowBtn.disabled = atEnd;
+
+    if (this.exportRowIndicator) this.exportRowIndicator.textContent = text;
+    if (this.exportPrevBtn) this.exportPrevBtn.disabled = atStart;
+    if (this.exportNextBtn) this.exportNextBtn.disabled = atEnd;
+  }
+
+  _getPreviewRoot(mount) {
+    if (!mount) return null;
+    if (!mount.shadowRoot) {
+      mount.attachShadow({ mode: "open" });
+    }
+    return mount.shadowRoot;
+  }
+
+  _fitPreviewMount(mount) {
+    if (!mount) return;
+    const wrapper = mount.parentElement;
+    const root = this._getPreviewRoot(mount);
+    const page = root?.querySelector(".page");
+    if (!wrapper || !page || wrapper.clientWidth < 1 || wrapper.clientHeight < 1) return;
+
+    page.style.width = `${A4_WIDTH_PX}px`;
+    page.style.height = `${A4_HEIGHT_PX}px`;
+    page.style.transform = "none";
+
+    const pageW = page.offsetWidth || A4_WIDTH_PX;
+    const pageH = page.offsetHeight || A4_HEIGHT_PX;
+    const pad = 12;
+    const availW = wrapper.clientWidth - pad;
+    const availH = wrapper.clientHeight - pad;
+    const scale = Math.min(availW / pageW, availH / pageH);
+
+    page.style.transform = `scale(${scale})`;
   }
 
   /**
@@ -35,13 +132,13 @@ export class PDFGenerator {
 
   _bindElements() {
     // Step 2 preview
-    this.previewFrame = document.getElementById("preview-frame");
+    this.previewMount = document.getElementById("preview-mount");
     this.prevRowBtn = document.getElementById("btn-prev-row");
     this.nextRowBtn = document.getElementById("btn-next-row");
     this.rowIndicator = document.getElementById("preview-row-indicator");
 
     // Step 3 export preview
-    this.exportPreviewFrame = document.getElementById("export-preview-frame");
+    this.exportPreviewMount = document.getElementById("export-preview-mount");
     this.exportPrevBtn = document.getElementById("btn-export-prev-row");
     this.exportNextBtn = document.getElementById("btn-export-next-row");
     this.exportRowIndicator = document.getElementById("export-row-indicator");
@@ -110,6 +207,17 @@ export class PDFGenerator {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  /**
+   * Root-relative paths (e.g. /datasheet-template/...) break in blob iframes — use absolute URLs
+   */
+  _absolutizePublicUrls(content) {
+    if (!content) return content;
+    const origin = window.location.origin;
+    return content.replace(/(\b(?:src|href)\s*=\s*["'])\/([^"']+)/gi, (_, attr, path) => {
+      return `${attr}${origin}/${path}`;
+    });
   }
 
   _normalizeSpecValue(val) {
@@ -183,10 +291,28 @@ export class PDFGenerator {
   }
 
   /**
+   * Map alternate column names (e.g. Product Code) onto CODE for {{CODE}}
+   */
+  _normalizeRowKeys(rowData) {
+    const data = { ...rowData };
+    const findKey = (pred) => Object.keys(data).find((k) => pred(k.trim()));
+
+    const codeKey = findKey((k) => k.toLowerCase() === "code");
+    const codeVal = codeKey ? String(data[codeKey] ?? "").trim() : "";
+
+    if (!codeVal) {
+      const altKey = findKey((k) => /^(product\s*code|sku|model)$/i.test(k));
+      if (altKey) data.CODE = data[altKey];
+    }
+
+    return data;
+  }
+
+  /**
    * Expose every SPECS JSON key for {{placeholders}} (dynamic, per row)
    */
   _expandRowData(rowData) {
-    const expanded = { ...rowData };
+    const expanded = this._normalizeRowKeys(rowData);
     const specsHeader = Object.keys(rowData).find((h) => {
       const n = h.trim().toLowerCase();
       return n === "specs" || n === "specification";
@@ -203,11 +329,21 @@ export class PDFGenerator {
   }
 
   _specsObjectToTable(entries) {
+    const tableClass = this._usesFullPageTemplate() ? "params" : "specs-table";
     const rows = entries.map(([key, val]) => {
       const display = this._normalizeSpecValue(val);
+      if (tableClass === "params") {
+        return `<tr><td>${this._escapeHtml(key)}</td><td>${this._escapeHtml(display)}</td></tr>`;
+      }
       return `<tr><td class="spec-key">${this._escapeHtml(key)}</td><td class="spec-val">${this._escapeHtml(display)}</td></tr>`;
     });
-    return `<table class="specs-table"><tbody>${rows.join("")}</tbody></table>`;
+    return `<table class="${tableClass}"><tbody>${rows.join("")}</tbody></table>`;
+  }
+
+  /** Azoogi template uses a fixed 210×297mm `.page` — export at full A4, no shrink margins */
+  _usesFullPageTemplate() {
+    const html = this.templateEditor.getHTML() || "";
+    return /\bclass\s*=\s*["'][^"']*\bpage\b/.test(html);
   }
 
   /**
@@ -237,13 +373,17 @@ export class PDFGenerator {
     const tableRows = [];
     let isTableLike = false;
 
+    const useParamsTable = this._usesFullPageTemplate();
+
     for (const line of lines) {
       const match = line.match(/^([^:\-\|]+)[:\-\|](.+)$/);
       if (match) {
         const key = match[1].trim();
         const val = match[2].trim();
         tableRows.push(
-          `<tr><td class="spec-key">${this._escapeHtml(key)}</td><td class="spec-val">${this._escapeHtml(val)}</td></tr>`
+          useParamsTable
+            ? `<tr><td>${this._escapeHtml(key)}</td><td>${this._escapeHtml(val)}</td></tr>`
+            : `<tr><td class="spec-key">${this._escapeHtml(key)}</td><td class="spec-val">${this._escapeHtml(val)}</td></tr>`
         );
         isTableLike = true;
       } else {
@@ -252,7 +392,8 @@ export class PDFGenerator {
     }
 
     if (isTableLike) {
-      return `<table class="specs-table"><tbody>${tableRows.join("")}</tbody></table>`;
+      const tableClass = this._usesFullPageTemplate() ? "params" : "specs-table";
+      return `<table class="${tableClass}"><tbody>${tableRows.join("")}</tbody></table>`;
     }
 
     return lines.map((line) => `<div class="spec-line">${this._escapeHtml(line)}</div>`).join("");
@@ -269,7 +410,7 @@ export class PDFGenerator {
       const trimmedKey = key.trim();
       const header = Object.keys(data).find((h) => h.trim().toLowerCase() === trimmedKey.toLowerCase());
 
-      if (!header) return match;
+      if (!header) return "";
 
       const value = data[header] ?? "";
 
@@ -286,39 +427,32 @@ export class PDFGenerator {
   }
 
   /**
-   * Build full HTML document for a single row
+   * Build preview fragment (HTML + CSS) for a single row
    */
-  _buildDocument(rowData) {
+  _buildPreviewContent(rowData) {
     const htmlTemplate = this.templateEditor.getHTML();
     const cssTemplate = this.templateEditor.getCSS();
-
-    const htmlContent = this._replacePlaceholders(htmlTemplate, rowData);
+    const htmlContent = this._absolutizePublicUrls(this._replacePlaceholders(htmlTemplate, rowData));
     const cssContent = this._replacePlaceholders(cssTemplate, rowData);
-
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>${cssContent}</style>
-</head>
-<body>${htmlContent}</body>
-</html>`;
+    return { htmlContent, cssContent };
   }
 
   /**
-   * Render preview in iframe
+   * Render preview directly in the page (fills panel, sharp, no iframe scaling bugs)
    */
-  _renderInIframe(iframe, rowData) {
-    const doc = this._buildDocument(rowData);
-    const blob = new Blob([doc], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
+  _renderPreview(mount, rowData) {
+    if (!mount) return;
 
-    // Revoke previous URL to prevent memory leaks
-    if (iframe._blobUrl) {
-      URL.revokeObjectURL(iframe._blobUrl);
-    }
-    iframe._blobUrl = url;
-    iframe.src = url;
+    const { htmlContent, cssContent } = this._buildPreviewContent(rowData);
+    const root = this._getPreviewRoot(mount);
+    root.innerHTML = `<style>${cssContent}\n${PREVIEW_SHADOW_CSS}</style><div class="preview-sheet">${htmlContent}</div>`;
+
+    this._resolveAssetUrls(root);
+
+    requestAnimationFrame(() => {
+      this._fitPreviewMount(mount);
+      this._waitForImages(root).then(() => this._fitPreviewMount(mount));
+    });
   }
 
   /**
@@ -333,12 +467,8 @@ export class PDFGenerator {
     }
 
     const rowData = this.csvParser.getRow(this.currentPreviewRow);
-    this._renderInIframe(this.previewFrame, rowData);
-
-    // Update controls
-    this.rowIndicator.textContent = `Row ${this.currentPreviewRow + 1} of ${rowCount}`;
-    this.prevRowBtn.disabled = this.currentPreviewRow === 0;
-    this.nextRowBtn.disabled = this.currentPreviewRow >= rowCount - 1;
+    this._renderPreview(this.previewMount, rowData);
+    this._updatePreviewNav(rowCount);
   }
 
   /**
@@ -353,12 +483,8 @@ export class PDFGenerator {
     }
 
     const rowData = this.csvParser.getRow(this.currentPreviewRow);
-    this._renderInIframe(this.exportPreviewFrame, rowData);
-
-    // Update controls
-    this.exportRowIndicator.textContent = `Row ${this.currentPreviewRow + 1} of ${rowCount}`;
-    this.exportPrevBtn.disabled = this.currentPreviewRow === 0;
-    this.exportNextBtn.disabled = this.currentPreviewRow >= rowCount - 1;
+    this._renderPreview(this.exportPreviewMount, rowData);
+    this._updatePreviewNav(rowCount);
   }
 
   /**
@@ -373,6 +499,20 @@ export class PDFGenerator {
    */
   _getExportLayout(marginMm) {
     const { width: pageWidthMm, height: pageHeightMm } = this._getPageFormat();
+
+    if (this._usesFullPageTemplate()) {
+      return {
+        pageWidthMm,
+        pageHeightMm,
+        marginMm: 0,
+        contentWidthMm: pageWidthMm,
+        contentHeightMm: pageHeightMm,
+        contentWidthPx: Math.round(pageWidthMm * MM_TO_PX),
+        contentHeightPx: Math.round(pageHeightMm * MM_TO_PX),
+        fullPage: true,
+      };
+    }
+
     const contentWidthMm = pageWidthMm - marginMm * 2;
     const contentHeightMm = pageHeightMm - marginMm * 2;
 
@@ -384,7 +524,56 @@ export class PDFGenerator {
       contentHeightMm,
       contentWidthPx: Math.round(contentWidthMm * MM_TO_PX),
       contentHeightPx: Math.round(contentHeightMm * MM_TO_PX),
+      fullPage: false,
     };
+  }
+
+  /**
+   * Turn root-relative image paths into absolute URLs for off-DOM capture
+   */
+  _resolveAssetUrls(root) {
+    root.querySelectorAll("img[src]").forEach((img) => {
+      const src = img.getAttribute("src");
+      if (!src || src.startsWith("data:") || /^https?:/i.test(src)) return;
+      try {
+        img.src = new URL(src, window.location.href).href;
+      } catch {
+        /* keep original */
+      }
+    });
+  }
+
+  async _waitForLayout() {
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+  }
+
+  _getCaptureTarget(container) {
+    return (
+      container.querySelector(".page") ||
+      container.querySelector(".pdf-page") ||
+      container
+    );
+  }
+
+  _applyCaptureStagingStyles() {
+    this._stagingStyleBackup = this.stagingRoot.getAttribute("style");
+    Object.assign(this.stagingRoot.style, {
+      opacity: "1",
+      visibility: "visible",
+      overflow: "visible",
+      transform: "none",
+    });
+  }
+
+  _restoreCaptureStagingStyles() {
+    if (this._stagingStyleBackup) {
+      this.stagingRoot.setAttribute("style", this._stagingStyleBackup);
+    } else {
+      this.stagingRoot.removeAttribute("style");
+    }
+    this._stagingStyleBackup = null;
   }
 
   /**
@@ -413,13 +602,30 @@ export class PDFGenerator {
   _buildPageElement(rowData) {
     const htmlTemplate = this.templateEditor.getHTML();
     const cssTemplate = this.templateEditor.getCSS();
-    const htmlContent = this._replacePlaceholders(htmlTemplate, rowData);
+    const htmlContent = this._absolutizePublicUrls(this._replacePlaceholders(htmlTemplate, rowData));
 
     const wrapper = document.createElement("div");
     wrapper.className = "pdf-page-wrapper";
 
+    const fullPage = this._usesFullPageTemplate();
     const layoutStyle = document.createElement("style");
-    layoutStyle.textContent = `
+    layoutStyle.textContent = fullPage
+      ? `
+      .pdf-page-wrapper,
+      .pdf-page {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      .pdf-page .page {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+    `
+      : `
       .pdf-page-wrapper,
       .pdf-page,
       .pdf-page .datasheet-container {
@@ -460,8 +666,12 @@ export class PDFGenerator {
     Object.assign(this._exportContainer.style, {
       width: `${contentWidthPx}px`,
       height: `${contentHeightPx}px`,
+      minWidth: `${contentWidthPx}px`,
+      minHeight: `${contentHeightPx}px`,
       background: "#ffffff",
       overflow: "hidden",
+      opacity: "1",
+      visibility: "visible",
     });
     this._exportContainer.replaceChildren();
     return this._exportContainer;
@@ -484,9 +694,23 @@ export class PDFGenerator {
   /**
    * Place captured content at margins, filling the full printable area
    */
-  _addCanvasToPdf(pdf, imgData, layout) {
+  _addCanvasToPdf(pdf, imgData, layout, canvasWidthPx, canvasHeightPx) {
+    const pxPerMm = MM_TO_PX;
+    const imgWidthMm = canvasWidthPx / pxPerMm;
+    const imgHeightMm = canvasHeightPx / pxPerMm;
+
+    if (layout.fullPage) {
+      pdf.addImage(imgData, "JPEG", 0, 0, layout.pageWidthMm, layout.pageHeightMm);
+      return;
+    }
+
     const { marginMm, contentWidthMm, contentHeightMm } = layout;
-    pdf.addImage(imgData, "JPEG", marginMm, marginMm, contentWidthMm, contentHeightMm);
+    const scale = Math.min(contentWidthMm / imgWidthMm, contentHeightMm / imgHeightMm);
+    const drawW = imgWidthMm * scale;
+    const drawH = imgHeightMm * scale;
+    const offsetX = marginMm + (contentWidthMm - drawW) / 2;
+    const offsetY = marginMm + (contentHeightMm - drawH) / 2;
+    pdf.addImage(imgData, "JPEG", offsetX, offsetY, drawW, drawH);
   }
 
   /**
@@ -528,24 +752,7 @@ export class PDFGenerator {
         orientation,
       });
 
-      const canvasOptions = {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        width: layout.contentWidthPx,
-        height: layout.contentHeightPx,
-        windowWidth: layout.contentWidthPx,
-        windowHeight: layout.contentHeightPx,
-        scrollX: 0,
-        scrollY: 0,
-        onclone: (clonedDoc) => {
-          clonedDoc.querySelectorAll(".pdf-export-container, .pdf-page-wrapper").forEach((el) => {
-            el.style.opacity = "1";
-            el.style.visibility = "visible";
-          });
-        },
-      };
+      const canvasScale = 2;
 
       for (let i = startRow; i <= endRow; i++) {
         const rowData = this.csvParser.getRow(i);
@@ -556,15 +763,55 @@ export class PDFGenerator {
         container = this._getExportContainer(layout.contentWidthPx, layout.contentHeightPx);
         container.appendChild(this._buildPageElement(rowData));
 
+        this._resolveAssetUrls(container);
         await this._waitForImages(container);
+        await this._waitForLayout();
 
-        const canvas = await html2canvas(container, canvasOptions);
+        const captureTarget = this._getCaptureTarget(container);
+        this._applyCaptureStagingStyles();
+
+        let canvas;
+        try {
+          canvas = await html2canvas(captureTarget, {
+            scale: canvasScale,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: "#ffffff",
+            imageTimeout: 15000,
+            scrollX: 0,
+            scrollY: 0,
+            onclone: (clonedDoc) => {
+              clonedDoc.querySelectorAll(".pdf-export-container, .pdf-page-wrapper, .pdf-page, .page").forEach((el) => {
+                el.style.opacity = "1";
+                el.style.visibility = "visible";
+              });
+              clonedDoc.querySelectorAll("img[src]").forEach((img) => {
+                const src = img.getAttribute("src");
+                if (src && src.startsWith("/")) {
+                  try {
+                    img.src = new URL(src, window.location.href).href;
+                  } catch {
+                    /* ignore */
+                  }
+                }
+              });
+            },
+          });
+        } finally {
+          this._restoreCaptureStagingStyles();
+        }
+
+        if (!canvas.width || !canvas.height) {
+          throw new Error("Page render failed (empty canvas). Check template images and reload the page.");
+        }
+
         const imgData = canvas.toDataURL("image/jpeg", 0.98);
 
         if (pageIndex > 0) {
           pdf.addPage(jsPdfFormat, orientation);
         }
-        this._addCanvasToPdf(pdf, imgData, layout);
+        this._addCanvasToPdf(pdf, imgData, layout, canvas.width, canvas.height);
       }
 
       pdf.save(`${filename}.pdf`);
