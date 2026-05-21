@@ -126,7 +126,7 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
 .product-img {
   width: 100%;
   height: 78mm;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 2px;
   display: block;
 }
