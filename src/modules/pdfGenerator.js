@@ -233,21 +233,7 @@ export class PDFGenerator {
    * Get page size dimensions
    */
   _getPageFormat() {
-    const size = this.pageSizeSelect.value;
-    const orientation = this.orientationSelect.value;
-
-    const formats = {
-      a4: [210, 297],
-      letter: [215.9, 279.4],
-      legal: [215.9, 355.6],
-    };
-
-    let [w, h] = formats[size] || formats.a4;
-    if (orientation === 'landscape') {
-      [w, h] = [h, w];
-    }
-
-    return { format: size, orientation, width: w, height: h };
+    return { format: 'a4', orientation: 'portrait', width: 210, height: 297 };
   }
 
   /**
@@ -281,9 +267,10 @@ export class PDFGenerator {
     }
 
     const totalRows = endRow - startRow + 1;
-    const margin = parseInt(this.marginSelect.value) || 10;
-    const filename = this.filenameInput.value.trim() || 'datasheet-output';
-    const { format, orientation } = this._getPageFormat();
+    const margin = 0;
+    const filename = 'datasheet';
+    const format = 'a4';
+    const orientation = 'portrait';
 
     // Show progress
     this.progressSection.classList.remove('hidden');
