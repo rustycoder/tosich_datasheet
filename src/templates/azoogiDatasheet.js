@@ -122,11 +122,25 @@ table.params tr td:first-child {
 table.params tr:nth-child(odd) td:last-child { background: #d9f0d0; color: #111; }
 table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111; }
 
-.product-img {
-  width: 100%;
+.product-img-container, .dim-img-container {
   height: 78mm;
-  object-fit: contain;
-  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dim-img-container {
+  height: 55mm;
+  margin-top: 34px;
+
+}
+
+.product-img {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  width: auto;
   display: block;
 }
 
@@ -139,11 +153,11 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
 }
 
 .dim-img {
-  width: 80%;
-  height: 55mm;
-  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  width: auto;
   display: block;
-  margin: 0 auto;
 }
 
 .updated {
@@ -201,10 +215,14 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
         {{SPECS}}
       </div>
 
-      <div>
-        <img class="product-img" src="{{IMAGE}}" alt="{{NAME}}">
-        <div class="dim-title">DIMENSIONS</div>
-        <img class="dim-img" src="{{DIAGRAM}}" alt="Dimensions">
+      <div style="display: flex; flex-direction: column;">
+        <div class="product-img-container">
+          <img class="product-img" src="{{IMAGE}}" alt="{{NAME}}">
+        </div>
+        <div class="dim-img-container">
+          <div class="dim-title">DIMENSIONS</div>
+          <img class="dim-img" src="{{DIAGRAM}}" alt="Dimensions">
+        </div>
       </div>
 
     </div>
