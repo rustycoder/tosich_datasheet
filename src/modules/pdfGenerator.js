@@ -104,20 +104,129 @@ export class PDFGenerator {
     this.generateBtn.addEventListener("click", () => this._generatePDF());
   }
 
+  _escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  _normalizeSpecValue(val) {
+    if (val === null || val === undefined) return "";
+    if (typeof val === "boolean") return val ? "Yes" : "No";
+    if (typeof val === "number") return String(val);
+    if (Array.isArray(val)) return val.map((v) => this._normalizeSpecValue(v)).join(", ");
+    if (typeof val === "object") return JSON.stringify(val);
+    return String(val);
+  }
+
   /**
-   * Format Specification column text into a clean HTML table
+   * Parse SPECS cell value as JSON — any keys allowed, no fixed schema
+   */
+  _parseSpecsJson(specStr) {
+    if (specStr === undefined || specStr === null || specStr === "") return null;
+    if (typeof specStr === "object" && !Array.isArray(specStr)) return specStr;
+
+    let raw = String(specStr).trim().replace(/^\uFEFF/, "");
+    if (!raw) return null;
+
+    if (raw.includes("<table") || raw.includes("<tr")) return null;
+
+    raw = raw.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
+    if (raw.includes('""')) raw = raw.replace(/""/g, '"');
+
+    if (!raw.startsWith("{") && /["']?[^"':]+["']?\s*:/.test(raw)) {
+      const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const obj = {};
+      for (const line of lines) {
+        const m = line.match(/^["']?([^"':]+)["']?\s*:\s*(.+)$/);
+        if (m) obj[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, "");
+      }
+      if (Object.keys(obj).length > 0) return obj;
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+    } catch {
+      /* fallback below */
+    }
+
+    // Loose fallback: pull any "key": "value" pairs from malformed JSON
+    const obj = {};
+    const pairRe = /["']?([^"':\{\},]+)["']?\s*:\s*["']?([^"',\n\}]+)["']?/g;
+    let m;
+    while ((m = pairRe.exec(raw)) !== null) {
+      const k = m[1].trim();
+      const v = m[2].trim();
+      if (k) obj[k] = v;
+    }
+    return Object.keys(obj).length > 0 ? obj : null;
+  }
+
+  /**
+   * Turn parsed SPECS object into [key, value] rows (supports nested objects)
+   */
+  _flattenSpecsEntries(obj) {
+    const entries = [];
+    for (const [key, val] of Object.entries(obj)) {
+      if (val !== null && typeof val === "object" && !Array.isArray(val)) {
+        for (const [subKey, subVal] of Object.entries(val)) {
+          entries.push([`${key} — ${subKey}`, subVal]);
+        }
+      } else {
+        entries.push([key, val]);
+      }
+    }
+    return entries;
+  }
+
+  /**
+   * Expose every SPECS JSON key for {{placeholders}} (dynamic, per row)
+   */
+  _expandRowData(rowData) {
+    const expanded = { ...rowData };
+    const specsHeader = Object.keys(rowData).find((h) => {
+      const n = h.trim().toLowerCase();
+      return n === "specs" || n === "specification";
+    });
+    if (!specsHeader) return expanded;
+
+    const parsed = this._parseSpecsJson(rowData[specsHeader]);
+    if (!parsed) return expanded;
+
+    for (const [key, val] of this._flattenSpecsEntries(parsed)) {
+      expanded[key] = this._normalizeSpecValue(val);
+    }
+    return expanded;
+  }
+
+  _specsObjectToTable(entries) {
+    const rows = entries.map(([key, val]) => {
+      const display = this._normalizeSpecValue(val);
+      return `<tr><td class="spec-key">${this._escapeHtml(key)}</td><td class="spec-val">${this._escapeHtml(display)}</td></tr>`;
+    });
+    return `<table class="specs-table"><tbody>${rows.join("")}</tbody></table>`;
+  }
+
+  /**
+   * Format SPECS / Specification into a key-value HTML table (JSON or plain text)
    */
   _formatSpecification(specStr) {
     if (specStr === undefined || specStr === null || specStr === "") return "";
 
     const spec = String(specStr);
 
-    // Check if it's already HTML (e.g. contains table tags) to prevent double encoding
-    if (spec.includes("<table") || spec.includes("<div") || spec.includes("<tr")) {
+    if (spec.includes("<table") || spec.includes("<tr")) {
       return spec;
     }
 
-    // Split by newlines or HTML line breaks
+    const jsonObj = this._parseSpecsJson(spec);
+    if (jsonObj) {
+      return this._specsObjectToTable(this._flattenSpecsEntries(jsonObj));
+    }
+
     const lines = spec
       .split(/\r?\n|<br\s*\/?>/gi)
       .map((line) => line.trim())
@@ -129,15 +238,16 @@ export class PDFGenerator {
     let isTableLike = false;
 
     for (const line of lines) {
-      // Match "Key: Value" or "Key - Value" or "Key | Value"
       const match = line.match(/^([^:\-\|]+)[:\-\|](.+)$/);
       if (match) {
         const key = match[1].trim();
         const val = match[2].trim();
-        tableRows.push(`<tr><td class="spec-key">${key}</td><td class="spec-val">${val}</td></tr>`);
+        tableRows.push(
+          `<tr><td class="spec-key">${this._escapeHtml(key)}</td><td class="spec-val">${this._escapeHtml(val)}</td></tr>`
+        );
         isTableLike = true;
       } else {
-        tableRows.push(`<tr><td colspan="2" class="spec-text">${line}</td></tr>`);
+        tableRows.push(`<tr><td colspan="2" class="spec-text">${this._escapeHtml(line)}</td></tr>`);
       }
     }
 
@@ -145,7 +255,7 @@ export class PDFGenerator {
       return `<table class="specs-table"><tbody>${tableRows.join("")}</tbody></table>`;
     }
 
-    return lines.map((line) => `<div class="spec-line">${line}</div>`).join("");
+    return lines.map((line) => `<div class="spec-line">${this._escapeHtml(line)}</div>`).join("");
   }
 
   /**
@@ -153,18 +263,22 @@ export class PDFGenerator {
    */
   _replacePlaceholders(templateStr, rowData) {
     if (!templateStr) return "";
+    const data = this._expandRowData(rowData);
+
     return templateStr.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (match, key) => {
       const trimmedKey = key.trim();
-      // Case-insensitive, trimmed header match
-      const header = Object.keys(rowData).find((h) => h.trim().toLowerCase() === trimmedKey.toLowerCase());
+      const header = Object.keys(data).find((h) => h.trim().toLowerCase() === trimmedKey.toLowerCase());
 
       if (!header) return match;
 
-      const value = rowData[header] ?? "";
+      const value = data[header] ?? "";
 
-      // If the column name is "Specification" or "Specs", auto-convert it to table
       if (trimmedKey.toLowerCase() === "specification" || trimmedKey.toLowerCase() === "specs") {
-        return this._formatSpecification(value);
+        const specsHeader = Object.keys(rowData).find((h) => {
+          const n = h.trim().toLowerCase();
+          return n === "specs" || n === "specification";
+        });
+        return this._formatSpecification(specsHeader ? rowData[specsHeader] : value);
       }
 
       return value;
