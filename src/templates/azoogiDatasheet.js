@@ -129,7 +129,7 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
   border-radius: 2px;
   display: block;
 }
-  
+
 .dim-title {
   text-align: center;
   margin: 6mm 0 3mm;
@@ -140,7 +140,7 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
 
 .dim-img {
   width: 80%;
-  max-height: 55mm;
+  height: 55mm;
   object-fit: contain;
   display: block;
   margin: 0 auto;
