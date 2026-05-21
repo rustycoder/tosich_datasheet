@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Excel to PDF Generator — Upload Excel files with embedded images, design templates with HTML/CSS, and generate beautiful PDFs instantly." />
+  <title>DataSheet — Excel to PDF Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+  <script>
+    window.global = window;
+  </script>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="app-header">
+      <div class="header-left">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="url(#logo-grad)" />
+            <path d="M8 10h16M8 16h12M8 22h14" stroke="#fff" stroke-width="2" stroke-linecap="round" />
+            <defs>
+              <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
+                <stop stop-color="#6366f1" />
+                <stop offset="1" stop-color="#a855f7" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <h1>DataSheet</h1>
+        </div>
+        <p class="tagline">Excel → PDF, beautifully.</p>
+      </div>
+      <nav class="header-nav">
+        <div class="step-indicators" id="step-indicators">
+          <button class="step-btn active" data-step="1">
+            <span class="step-num">1</span>
+            <span class="step-label">Upload</span>
+          </button>
+          <div class="step-connector"></div>
+          <button class="step-btn" data-step="2">
+            <span class="step-num">2</span>
+            <span class="step-label">Design</span>
+          </button>
+          <div class="step-connector"></div>
+          <button class="step-btn" data-step="3">
+            <span class="step-num">3</span>
+            <span class="step-label">Export</span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Step 1: Upload Excel -->
+      <section class="step-panel active" id="step-1">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2L14 6H11V12H9V6H6L10 2Z" fill="currentColor"/>
+                <path d="M3 14V16C3 17.1 3.9 18 5 18H15C16.1 18 17 17.1 17 16V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Upload Your Excel File
+            </h2>
+            <p class="panel-desc">Drag & drop or click to select your .xlsx file (supports embedded images)</p>
+          </div>
+
+          <div class="dropzone" id="csv-dropzone">
+            <div class="dropzone-content">
+              <div class="dropzone-icon">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                  <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4"/>
+                  <path d="M24 14V34M14 24H34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <p class="dropzone-text">Drop your <strong>.xlsx</strong> file here</p>
+              <p class="dropzone-subtext">or click to browse · supports embedded images</p>
+            </div>
+          </div>
+          <input type="file" id="csv-file-input" accept=".xlsx,.xls" hidden />
+
+          <!-- Template Showcase -->
+          <div class="template-showcase" id="template-showcase">
+            <div class="showcase-header">
+              <h3>Or Start with a Design Template</h3>
+              <p>Select a preset design below to try it with pre-populated sample data instantly.</p>
+            </div>
+            <div class="template-grid">
+              <!-- Card 1: Datasheet -->
+              <div class="template-card" data-template-key="datasheet">
+                <div class="template-preview-container">
+                  <div class="mini-preview mini-datasheet">
+                    <div class="mini-ds-header">
+                      <div class="mini-ds-logo-left"></div>
+                      <div class="mini-ds-logo-right"></div>
+                    </div>
+                    <div class="mini-ds-bar"></div>
+                    <div class="mini-ds-title"></div>
+                    <div class="mini-ds-body">
+                      <div class="mini-ds-col-left">
+                        <div class="mini-line-long"></div>
+                        <div class="mini-line-short"></div>
+                        <div class="mini-table">
+                          <div class="mini-table-row"></div>
+                          <div class="mini-table-row"></div>
+                          <div class="mini-table-row"></div>
+                        </div>
+                      </div>
+                      <div class="mini-ds-col-right">
+                        <div class="mini-img-main"></div>
+                        <div class="mini-img-dim"></div>
+                      </div>
+                    </div>
+                    <div class="mini-ds-footer"></div>
+                  </div>
+                </div>
+                <div class="template-info">
+                  <h4>Azoogi Product Datasheet</h4>
+                  <p>A dual-column layout with header logos, a structured specification table, and product/dimension images.</p>
+                  <button class="btn btn-ghost btn-try-template" data-template="datasheet">Try with Sample Data</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="file-info hidden" id="file-info">
+            <div class="file-badge">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 1H10L14 5V13C14 14.1 13.1 15 12 15H4C2.9 15 2 14.1 2 13V3C2 1.9 2.9 1 4 1Z" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M10 1V5H14" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              <span id="file-name"></span>
+              <span class="file-meta" id="file-meta"></span>
+              <button class="btn-icon" id="remove-file" title="Remove file">✕</button>
+            </div>
+          </div>
+
+          <!-- Data Preview Table -->
+          <div class="data-preview hidden" id="data-preview">
+            <div class="preview-header">
+              <h3>Data Preview</h3>
+              <span class="row-count" id="row-count"></span>
+            </div>
+            <div class="table-wrapper">
+              <table id="preview-table">
+                <thead id="preview-thead"></thead>
+                <tbody id="preview-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn btn-primary" id="btn-to-design" disabled>
+              Continue to Design
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Template Editor -->
+      <section class="step-panel" id="step-2">
+        <div class="editor-layout">
+          <!-- Left: Editors -->
+          <div class="editor-pane">
+            <div class="panel-card">
+              <div class="panel-header">
+                <h2>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M3 5L7 3L10 5L13 3L17 5V15L13 17L10 15L7 17L3 15V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                  </svg>
+                  Template Editor
+                </h2>
+                <div class="template-actions">
+                  <select id="template-select" class="select-input">
+                    <option value="default">Default Template</option>
+                    <option value="datasheet">Data Sheet</option>
+                  </select>
+                  <button class="btn btn-ghost" id="btn-save-template" title="Save template">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M11 13H3C2.4 13 2 12.6 2 12V2C2 1.4 2.4 1 3 1H9L12 4V12C12 12.6 11.6 13 11 13Z" stroke="currentColor" stroke-width="1.2"/>
+                      <path d="M4 1V5H9V1" stroke="currentColor" stroke-width="1.2"/>
+                      <path d="M4 13V8H10V13" stroke="currentColor" stroke-width="1.2"/>
+                    </svg>
+                    Save
+                  </button>
+                </div>
+              </div>
+
+              <!-- Column Tags -->
+              <div class="column-tags" id="column-tags">
+                <span class="tags-label">Insert column:</span>
+                <div class="tags-list" id="tags-list"></div>
+              </div>
+
+              <!-- Editor Tabs -->
+              <div class="editor-tabs">
+                <button class="tab-btn active" data-tab="html">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M4 4L1 7L4 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 4L13 7L10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 2L6 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                  HTML
+                </button>
+                <button class="tab-btn" data-tab="css">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M5 6C5 5.4 5.9 5 7 5C8.1 5 9 5.4 9 6C9 7 7 7 7 8V9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                  CSS
+                </button>
+              </div>
+
+              <!-- Code Editors -->
+              <div class="code-editor-wrapper">
+                <div class="code-editor active" id="html-editor-container"></div>
+                <div class="code-editor" id="css-editor-container"></div>
+              </div>
+            </div>
+
+            <div class="panel-actions editor-actions">
+              <button class="btn btn-ghost" id="btn-back-upload">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13 8H3M7 4L3 8L7 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back
+              </button>
+              <button class="btn btn-primary" id="btn-to-export">
+                Continue to Export
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Live Preview -->
+          <div class="preview-pane">
+            <div class="panel-card preview-card">
+              <div class="panel-header">
+                <h3>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <rect x="1" y="1" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M1 5H17" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="3.5" cy="3" r="0.8" fill="currentColor"/>
+                    <circle cx="5.5" cy="3" r="0.8" fill="currentColor"/>
+                    <circle cx="7.5" cy="3" r="0.8" fill="currentColor"/>
+                  </svg>
+                  Live Preview
+                </h3>
+                <div class="preview-controls">
+                  <button class="btn-icon" id="btn-prev-row" title="Previous row" disabled>‹</button>
+                  <span id="preview-row-indicator">Row 1</span>
+                  <button class="btn-icon" id="btn-next-row" title="Next row">›</button>
+                </div>
+              </div>
+              <div class="preview-frame-wrapper">
+                <iframe id="preview-frame" sandbox="allow-same-origin"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Export -->
+      <section class="step-panel" id="step-3">
+        <div class="export-layout">
+          <div class="panel-card export-settings">
+            <div class="panel-header">
+              <h2>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 2V12M6 8L10 12L14 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3 14V16C3 17.1 3.9 18 5 18H15C16.1 18 17 17.1 17 16V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Export Settings
+              </h2>
+            </div>
+
+            <div class="settings-grid">
+              <div class="setting-group">
+                <label for="page-size">Page Size</label>
+                <select id="page-size" class="select-input">
+                  <option value="a4" selected>A4 (210 × 297mm)</option>
+                  <option value="letter">Letter (8.5 × 11in)</option>
+                  <option value="legal">Legal (8.5 × 14in)</option>
+                </select>
+              </div>
+
+              <div class="setting-group">
+                <label for="orientation">Orientation</label>
+                <select id="orientation" class="select-input">
+                  <option value="portrait" selected>Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </div>
+
+              <div class="setting-group">
+                <label for="margin">Margins</label>
+                <select id="margin" class="select-input">
+                  <option value="10" selected>Normal (10mm)</option>
+                  <option value="5">Narrow (5mm)</option>
+                  <option value="20">Wide (20mm)</option>
+                  <option value="0">None</option>
+                </select>
+              </div>
+
+              <div class="setting-group">
+                <label for="export-mode">Export Mode</label>
+                <select id="export-mode" class="select-input">
+                  <option value="all" selected>All rows (single PDF)</option>
+                  <option value="range">Row range</option>
+                </select>
+              </div>
+
+              <div class="setting-group range-group hidden" id="range-group">
+                <label>Row Range</label>
+                <div class="range-inputs">
+                  <input type="number" id="range-start" class="text-input" placeholder="From" min="1" />
+                  <span>to</span>
+                  <input type="number" id="range-end" class="text-input" placeholder="To" min="1" />
+                </div>
+              </div>
+
+              <div class="setting-group">
+                <label for="filename-input">Filename</label>
+                <input type="text" id="filename-input" class="text-input" value="datasheet-output" placeholder="filename" />
+              </div>
+            </div>
+
+            <div class="export-actions">
+              <button class="btn btn-ghost" id="btn-back-design">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13 8H3M7 4L3 8L7 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back to Design
+              </button>
+              <button class="btn btn-primary btn-export" id="btn-generate-pdf">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M9 2V12M5 8L9 12L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 14V15C2 15.6 2.4 16 3 16H15C15.6 16 16 15.6 16 15V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Generate PDF
+              </button>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-section hidden" id="progress-section">
+              <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+              </div>
+              <p class="progress-text" id="progress-text">Generating...</p>
+            </div>
+          </div>
+
+          <!-- Export Preview -->
+          <div class="panel-card export-preview-card">
+            <div class="panel-header">
+              <h3>Preview</h3>
+              <div class="preview-controls">
+                <button class="btn-icon" id="btn-export-prev-row" title="Previous row" disabled>‹</button>
+                <span id="export-row-indicator">Row 1</span>
+                <button class="btn-icon" id="btn-export-next-row" title="Next row">›</button>
+              </div>
+            </div>
+            <div class="preview-frame-wrapper">
+              <iframe id="export-preview-frame" sandbox="allow-same-origin"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
