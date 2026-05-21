@@ -18,7 +18,7 @@ const DEFAULT_TEMPLATES = {
 
   <!-- Title section -->
   <div class="ds-title-section">
-    <h1>{{Title}}</h1>
+    <h1>{{NAME}}</h1>
     <p class="ds-subtitle">LED DOWNLIGHT</p>
   </div>
 
@@ -28,22 +28,22 @@ const DEFAULT_TEMPLATES = {
   <div class="ds-content">
     <div class="ds-left-col">
       <div class="ds-desc">
-        <p>{{Description}}</p>
+        <p>{{DESCRIPTION}}</p>
       </div>
       <div class="ds-specs">
         <h2>LUMINAIRE SPECIFICATION</h2>
         <div class="ds-specs-table-container">
-          {{Specification}}
+          {{SPECS}}
         </div>
       </div>
     </div>
 
     <div class="ds-right-col">
       <div class="ds-image-box main-pic">
-        <img src="{{Picture}}" alt="{{Title}}" />
+        <img src="{{IMAGE}}" alt="{{NAME}}" />
       </div>
       <div class="ds-image-box dim-pic">
-        <img src="{{Dimension}}" alt="Dimensions" />
+        <img src="{{DIAGRAM}}" alt="Dimensions" />
       </div>
     </div>
   </div>
@@ -639,7 +639,7 @@ body {
 
   <!-- Title section -->
   <div class="ds-title-section">
-    <h1>{{Title}}</h1>
+    <h1>{{NAME}}</h1>
     <p class="ds-subtitle">LED DOWNLIGHT</p>
   </div>
 
@@ -649,22 +649,22 @@ body {
   <div class="ds-content">
     <div class="ds-left-col">
       <div class="ds-desc">
-        <p>{{Description}}</p>
+        <p>{{DESCRIPTION}}</p>
       </div>
       <div class="ds-specs">
         <h2>LUMINAIRE SPECIFICATION</h2>
         <div class="ds-specs-table-container">
-          {{Specification}}
+          {{SPECS}}
         </div>
       </div>
     </div>
 
     <div class="ds-right-col">
       <div class="ds-image-box main-pic">
-        <img src="{{Picture}}" alt="{{Title}}" />
+        <img src="{{IMAGE}}" alt="{{NAME}}" />
       </div>
       <div class="ds-image-box dim-pic">
-        <img src="{{Dimension}}" alt="Dimensions" />
+        <img src="{{DIAGRAM}}" alt="Dimensions" />
       </div>
     </div>
   </div>

@@ -332,7 +332,8 @@ export class ExcelParser {
   loadSampleData(templateKey) {
     let headers = [];
     let rows = [];
-    this.imageColumns.    if (templateKey === 'datasheet' || templateKey === 'default') {
+    this.imageColumns.clear();
+    if (templateKey === 'datasheet' || templateKey === 'default') {
       headers = ['NAME', 'IMAGE', 'DESCRIPTION', 'DIAGRAM', 'SPECS'];
       this.imageColumns.add('image');
       this.imageColumns.add('diagram');
@@ -355,7 +356,6 @@ export class ExcelParser {
           DIAGRAM: sampleDimension.replace('90mm', '110mm').replace('50', '40').replace('250', '260'),
           SPECS: 'Power: 15W\nInput Voltage: AC 240V\nLumen Output: 1300 lm\nColor Temp: 4000K\nBeam Angle: 90°\nCRI: >80\nDimmable: Yes (Triac)\nIP Rating: IP44\nCutout Size: Ø 110mm\nLifetime: 50,000 Hours\nWarranty: 3 Years'
         }
-      ];    }
       ];
     } else if (templateKey === 'certificate') {
       headers = ['certificate_type', 'name', 'description', 'issuer', 'date'];

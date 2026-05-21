@@ -144,8 +144,8 @@ export class PDFGenerator {
       
       const value = rowData[header] ?? '';
       
-      // If the column name is "Specification", auto-convert it to table
-      if (trimmedKey.toLowerCase() === 'specification') {
+      // If the column name is "Specification" or "Specs", auto-convert it to table
+      if (trimmedKey.toLowerCase() === 'specification' || trimmedKey.toLowerCase() === 'specs') {
         return this._formatSpecification(value);
       }
       
