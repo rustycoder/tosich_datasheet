@@ -136,6 +136,8 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
 
 }
 
+
+
 .product-img {
   max-width: 100%;
   max-height: 100%;
@@ -153,6 +155,23 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
 }
 
 .dim-img {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  width: auto;
+  display: block;
+}
+
+.note-img-container {
+  height: 45mm;
+  margin-top: 34px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 10mm;
+}
+
+.note-img {
   max-width: 100%;
   max-height: 100%;
   height: auto;
@@ -226,6 +245,10 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
       </div>
 
     </div>
+  </div>
+
+  <div class="note-img-container">
+    <img class="note-img" src="/datasheet-template/assets/note.jpeg" alt="Note">
   </div>
 
   <p class="updated">Last updated April 2026. Specifications subject to change without notice.</p>

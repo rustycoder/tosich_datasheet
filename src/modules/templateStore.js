@@ -7,7 +7,7 @@ import { azoogiDatasheetTemplate } from '../templates/azoogiDatasheet.js';
 
 const STORAGE_KEY = 'datasheet-templates';
 const TEMPLATE_VERSION_KEY = 'datasheet-template-version';
-const TEMPLATE_VERSION = 5;
+const TEMPLATE_VERSION = 7;
 
 const DEFAULT_TEMPLATES = {
   default: azoogiDatasheetTemplate,
