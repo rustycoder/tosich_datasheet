@@ -21,8 +21,6 @@ class App {
     this._bindNavigation();
     this._bindToast();
     this._wireModules();
-    this._bindShowcase();
-    this._loadDefaultExcelOnStartup();
   }
 
   _wireModules() {
@@ -45,45 +43,7 @@ class App {
     };
   }
 
-  _bindShowcase() {
-    const cards = document.querySelectorAll('.template-card');
-    cards.forEach((card) => {
-      card.addEventListener('click', () => {
-        const templateKey = card.dataset.templateKey;
-        this._loadTemplateWithSampleData(templateKey);
-      });
-    });
 
-    const tryBtns = document.querySelectorAll('.btn-try-template');
-    tryBtns.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation(); // prevent card click from triggering twice
-        const templateKey = btn.dataset.template;
-        this._loadTemplateWithSampleData(templateKey);
-      });
-    });
-  }
-
-  _loadTemplateWithSampleData(templateKey) {
-    // 1. Select and load template in editor
-    this.templateEditor.selectTemplate(templateKey);
-
-    // 2. Load mock sample data inside the Excel parser
-    this.csvParser.loadSampleData(templateKey);
-
-    // 3. Navigate to export step
-    this._goToStep(3);
-
-    // Toast notification
-    window.dispatchEvent(
-      new CustomEvent('toast', {
-        detail: {
-          message: `Loaded sample data for "${templateKey === 'default' || templateKey === 'datasheet' ? 'Azoogi Datasheet' : templateKey.charAt(0).toUpperCase() + templateKey.slice(1)}"!`,
-          type: 'success',
-        },
-      })
-    );
-  }
 
   _bindNavigation() {
     // Step indicator buttons
@@ -191,51 +151,7 @@ class App {
     });
   }
 
-  async _loadDefaultExcelOnStartup() {
-    try {
-      // 1. Fetch the generated sample excel file from local server
-      const response = await fetch('/sample-datasheet.xlsx');
-      if (!response.ok) throw new Error('File not found');
-      const arrayBuffer = await response.arrayBuffer();
 
-      // 2. Wrap buffer inside file mock object
-      const file = {
-        name: 'sample-datasheet.xlsx',
-        size: arrayBuffer.byteLength,
-        arrayBuffer: async () => arrayBuffer
-      };
-
-      // 3. Load spreadsheet using csvParser
-      await this.csvParser._handleFile(file);
-
-      // 4. Load latest built-in datasheet template (includes {{CODE}} in title)
-      this.templateEditor.selectTemplate('datasheet');
-      if (this.currentStep >= 2) {
-        this.pdfGenerator.updatePreview();
-      }
-
-      // 5. Restore dropzone visibility (allowing replacement) and update instruction text
-      this.csvParser.dropzone.style.display = '';
-      
-      const textEl = this.csvParser.dropzone.querySelector('.dropzone-text');
-      if (textEl) {
-        textEl.innerHTML = `Default <strong>sample-datasheet.xlsx</strong> loaded`;
-      }
-      
-      const subtextEl = this.csvParser.dropzone.querySelector('.dropzone-subtext');
-      if (subtextEl) {
-        subtextEl.innerHTML = `Continue to Export, or drop a new file to replace it`;
-      }
-      
-      console.log('Successfully loaded default Excel sample sheet on startup');
-    } catch (e) {
-      console.warn('Failed to load default sample-datasheet.xlsx on startup, falling back to static mock data:', e);
-      // Fallback: select template 'datasheet' and load static sample data
-      this.templateEditor.selectTemplate('datasheet');
-      this.csvParser.loadSampleData('datasheet');
-      this.csvParser.dropzone.style.display = '';
-    }
-  }
 }
 
 // Initialize app when DOM is ready
