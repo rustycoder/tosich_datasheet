@@ -240,7 +240,7 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
           <img class="dim-img" src="{{DIAGRAM}}" alt="Dimensions">
         </div>
         <div class="note-img-container">
-          <img class="note-img" src="/datasheet-template/assets/note_moriah.jpeg" alt="Note">
+          <img class="note-img" src="/datasheet-template/assets/note.jpeg" alt="Note">
         </div>
       </div>
     </div>
