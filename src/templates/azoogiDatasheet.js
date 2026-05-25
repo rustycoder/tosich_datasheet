@@ -176,14 +176,6 @@ table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111
   display: block;
 }
 
-.updated {
-  text-align: center;
-  font-style: italic;
-  font-size: 8.5pt;
-  color: #555;
-  padding: 3mm 10mm 5mm;
-}
-
 .az-footer {
   background: #0e0e0e;
   color: #ffffff;
@@ -251,8 +243,6 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
       </div>
     </div>
   </div>
-
-  <p class="updated">Last updated April 2026. Specifications subject to change without notice.</p>
 
   <footer class="az-footer">
     <span class="f-item">
