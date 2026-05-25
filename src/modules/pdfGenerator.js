@@ -406,7 +406,30 @@ export class PDFGenerator {
     if (!templateStr) return "";
     const data = this._expandRowData(rowData);
 
-    return templateStr.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (match, key) => {
+    let processedStr = templateStr;
+
+    // Evaluate {{#if COLUMN}} ... {{/if}} blocks from inside out (recursive check)
+    const ifRegex = /\{\{#if\s+([^}]+?)\s*\}\}([\s\S]*?)\{\{\/if\}\}/gi;
+    let matchFound = true;
+    let iterations = 0;
+
+    while (matchFound && iterations < 10) {
+      matchFound = false;
+      processedStr = processedStr.replace(ifRegex, (match, key, content) => {
+        matchFound = true;
+        const trimmedKey = key.trim();
+        const header = Object.keys(data).find((h) => h.trim().toLowerCase() === trimmedKey.toLowerCase());
+        const value = header ? data[header] : null;
+
+        if (value !== null && value !== undefined && String(value).trim() !== "") {
+          return content;
+        }
+        return "";
+      });
+      iterations++;
+    }
+
+    return processedStr.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (match, key) => {
       const trimmedKey = key.trim();
       const header = Object.keys(data).find((h) => h.trim().toLowerCase() === trimmedKey.toLowerCase());
 
@@ -448,6 +471,14 @@ export class PDFGenerator {
     root.innerHTML = `<style>${cssContent}\n${PREVIEW_SHADOW_CSS}</style><div class="preview-sheet">${htmlContent}</div>`;
 
     this._resolveAssetUrls(root);
+
+    // Automatically hide empty image elements
+    root.querySelectorAll("img").forEach((img) => {
+      const src = img.getAttribute("src");
+      if (!src || src.trim() === "" || src.includes("{{")) {
+        img.style.display = "none";
+      }
+    });
 
     requestAnimationFrame(() => {
       this._fitPreviewMount(mount);
@@ -649,6 +680,15 @@ export class PDFGenerator {
     const pageDiv = document.createElement("div");
     pageDiv.className = "pdf-page";
     pageDiv.innerHTML = htmlContent;
+
+    // Automatically hide empty image elements
+    pageDiv.querySelectorAll("img").forEach((img) => {
+      const src = img.getAttribute("src");
+      if (!src || src.trim() === "" || src.includes("{{")) {
+        img.style.display = "none";
+      }
+    });
+
     wrapper.appendChild(pageDiv);
 
     return wrapper;

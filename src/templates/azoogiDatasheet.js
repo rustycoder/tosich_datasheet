@@ -217,8 +217,8 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
   </header>
 
   <div class="title-block">
-    <h1>{{CODE}}</h1>
-    <h2>{{NAME}}</h2>
+    {{#if CODE}}<h1>{{CODE}}</h1>{{/if}}
+    {{#if NAME}}<h2>{{NAME}}</h2>{{/if}}
   </div>
   <hr class="gradient-line">
 
@@ -226,19 +226,25 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
     <div class="content">
 
       <div>
-        <p class="desc">{{DESCRIPTION}}</p>
-        <p class="params-title">SPECIFICATIONS</p>
-        {{SPECS}}
+        {{#if DESCRIPTION}}<p class="desc">{{DESCRIPTION}}</p>{{/if}}
+        {{#if SPECS}}
+          <p class="params-title">SPECIFICATIONS</p>
+          {{SPECS}}
+        {{/if}}
       </div>
 
       <div style="display: flex; flex-direction: column;">
+        {{#if IMAGE}}
         <div class="product-img-container">
           <img class="product-img" src="{{IMAGE}}" alt="{{NAME}}">
         </div>
+        {{/if}}
+        {{#if DIAGRAM}}
         <div class="dim-img-container">
           <div class="dim-title">DIMENSIONS</div>
           <img class="dim-img" src="{{DIAGRAM}}" alt="Dimensions">
         </div>
+        {{/if}}
         <div class="note-img-container">
           <img class="note-img" src="/datasheet-template/assets/note.jpeg" alt="Note">
         </div>
