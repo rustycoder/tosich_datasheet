@@ -4,14 +4,16 @@
  */
 
 import { azoogiDatasheetTemplate } from '../templates/azoogiDatasheet.js';
+import { heistSocialPostTemplate } from '../templates/heistSocialPost.js';
 
 const STORAGE_KEY = 'datasheet-templates';
 const TEMPLATE_VERSION_KEY = 'datasheet-template-version';
-const TEMPLATE_VERSION = 7;
+const TEMPLATE_VERSION = 8;
 
 const DEFAULT_TEMPLATES = {
   default: azoogiDatasheetTemplate,
   datasheet: azoogiDatasheetTemplate,
+  heist: heistSocialPostTemplate,
 
   certificate: {
     name: 'Certificate',
@@ -396,6 +398,9 @@ export class TemplateStore {
     if (version < TEMPLATE_VERSION) {
       delete this.saved.default;
       delete this.saved.datasheet;
+      delete this.saved.heist;
+      delete this.saved.certificate;
+      delete this.saved.invoice;
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.saved));
         localStorage.setItem(TEMPLATE_VERSION_KEY, String(TEMPLATE_VERSION));

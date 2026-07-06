@@ -111,6 +111,119 @@
             </div>
           </div>
 
+          <!-- Template Showcase -->
+          <div class="template-showcase" id="template-showcase">
+            <div class="showcase-header">
+              <h3>Select a Template</h3>
+              <p>Choose a template to format your Excel data. You can customize the HTML/CSS design in the next step.</p>
+            </div>
+            <div class="template-grid">
+              <!-- Template 1: Datasheet -->
+              <div class="template-card" data-template="datasheet">
+                <div class="template-preview-container">
+                  <div class="mini-preview mini-datasheet">
+                    <div class="mini-ds-header">
+                      <div class="mini-ds-logo-left"></div>
+                      <div class="mini-ds-logo-right"></div>
+                    </div>
+                    <div class="mini-ds-bar"></div>
+                    <div class="mini-ds-title"></div>
+                    <div class="mini-ds-body">
+                      <div class="mini-ds-col-left">
+                        <div class="mini-line-long"></div>
+                        <div class="mini-line-short"></div>
+                        <div class="mini-table">
+                          <div class="mini-table-row"></div>
+                          <div class="mini-table-row"></div>
+                        </div>
+                      </div>
+                      <div class="mini-ds-col-right">
+                        <div class="mini-img-main"></div>
+                        <div class="mini-img-dim"></div>
+                      </div>
+                    </div>
+                    <div class="mini-ds-footer"></div>
+                  </div>
+                </div>
+                <div class="template-info">
+                  <h4>Product Datasheet</h4>
+                  <p>Clean, professional layout for product details, specifications table, and dimension diagrams. Ideal for catalogs and technical sheets.</p>
+                  <button type="button" class="btn btn-outline btn-try-template">Select Template</button>
+                </div>
+              </div>
+
+              <!-- Template 2: AI Heist Social Post Layout -->
+              <div class="template-card" data-template="heist">
+                <div class="template-preview-container">
+                  <div class="mini-preview mini-heist">
+                    <div class="mini-heist-bg"></div>
+                    <div class="mini-heist-overlay"></div>
+                    <div class="mini-heist-content">
+                      <div class="mini-heist-badge">A<span>i</span></div>
+                      <div class="mini-heist-headline"></div>
+                      <div class="mini-heist-headline-sub"></div>
+                      <div class="mini-heist-btn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="template-info">
+                  <h4>AI Heist Social Post</h4>
+                  <p>Stunning, dark-themed social post template featuring large headlines, high contrast highlights, a custom badge, and swipe indicator.</p>
+                  <button type="button" class="btn btn-outline btn-try-template">Select Template</button>
+                </div>
+              </div>
+
+              <!-- Template 3: Certificate -->
+              <div class="template-card" data-template="certificate">
+                <div class="template-preview-container">
+                  <div class="mini-preview mini-certificate">
+                    <div class="mini-cert-frame">
+                      <div class="mini-cert-pre"></div>
+                      <div class="mini-cert-title"></div>
+                      <div class="mini-cert-recipient"></div>
+                      <div class="mini-cert-divider"></div>
+                      <div class="mini-cert-desc"></div>
+                      <div class="mini-cert-sigs">
+                        <div class="mini-cert-sig"></div>
+                        <div class="mini-cert-sig"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="template-info">
+                  <h4>Award Certificate</h4>
+                  <p>Elegant, formal certificate with border ornaments and classic typography. Perfect for awards, completion certificates, or diplomas.</p>
+                  <button type="button" class="btn btn-outline btn-try-template">Select Template</button>
+                </div>
+              </div>
+
+              <!-- Template 4: Invoice -->
+              <div class="template-card" data-template="invoice">
+                <div class="template-preview-container">
+                  <div class="mini-preview mini-invoice">
+                    <div class="mini-inv-header">
+                      <div class="mini-inv-brand"></div>
+                      <div class="mini-inv-meta"></div>
+                    </div>
+                    <div class="mini-inv-parties">
+                      <div class="mini-inv-party"></div>
+                      <div class="mini-inv-party"></div>
+                    </div>
+                    <div class="mini-inv-table-header"></div>
+                    <div class="mini-inv-table-row"></div>
+                    <div class="mini-inv-total"></div>
+                    <div class="mini-inv-footer"></div>
+                  </div>
+                </div>
+                <div class="template-info">
+                  <h4>Business Invoice</h4>
+                  <p>Modern billing invoice template with a distinct header bar, itemized pricing tables, tax details, and notes section.</p>
+                  <button type="button" class="btn btn-outline btn-try-template">Select Template</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="panel-actions">
             <button class="btn btn-primary" id="btn-to-design" disabled>
               Continue to Export
@@ -139,6 +252,9 @@
                   <select id="template-select" class="select-input">
                     <option value="default">Default Template</option>
                     <option value="datasheet">Data Sheet</option>
+                    <option value="heist">AI Heist Social Post</option>
+                    <option value="certificate">Award Certificate</option>
+                    <option value="invoice">Business Invoice</option>
                   </select>
                   <button class="btn btn-ghost" id="btn-save-template" title="Save template">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
