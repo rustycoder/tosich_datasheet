@@ -400,6 +400,21 @@ export class ExcelParser {
           SPECS: sampleSpecs15W,
         },
       ];
+    } else if (templateKey === 'heist') {
+      headers = ['HEADLINE', 'IMAGE', 'SWIPE_TEXT'];
+      this.imageColumns.add('image');
+      rows = [
+        {
+          HEADLINE: 'China ran one of the <br> <span class="highlight">biggest AI heists <br> against Anthropic</span> for 45 <br> days without getting caught',
+          IMAGE: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop',
+          SWIPE_TEXT: 'Swipe for details'
+        },
+        {
+          HEADLINE: 'State-sponsored hackers <br> <span class="highlight">breach defense grid</span> <br> using zero-day flaw',
+          IMAGE: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop',
+          SWIPE_TEXT: 'Learn more'
+        }
+      ];
     } else if (templateKey === 'certificate') {
       headers = ['certificate_type', 'name', 'description', 'issuer', 'date'];
       rows = [

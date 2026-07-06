@@ -77,6 +77,25 @@ class App {
     document.getElementById('btn-back-design').addEventListener('click', () => {
       this._goToStep(2);
     });
+
+    // Template Selector Showcase click handlers
+    const templateCards = document.querySelectorAll('.template-card');
+    templateCards.forEach((card) => {
+      card.addEventListener('click', () => {
+        const templateKey = card.dataset.template;
+        
+        // Select template in the editor
+        this.templateEditor.selectTemplate(templateKey);
+
+        // If no file has been uploaded, load sample data
+        if (this.csvParser.getRowCount() === 0) {
+          this.csvParser.loadSampleData(templateKey);
+        }
+
+        // Advance to Step 2 (Design)
+        this._goToStep(2);
+      });
+    });
   }
 
   _getMaxAccessibleStep() {
