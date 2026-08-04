@@ -106,21 +106,21 @@ table.params {
   width: 100%;
   border-collapse: collapse;
   font-size: 10px;
-  border: 1px solid #73bf44;
+  border: 1px solid #ffffff;
 }
 table.params td {
   padding: 2mm 3mm;
-  border: 1px solid #73bf44;
+  border-top: 1px solid #ccc;
   vertical-align: middle;
 }
 table.params tr td:first-child {
   font-weight: 700;
   width: 38%;
-  background: #1a1a1a;
-  color: #ffffff;
+  background: #ffffff;
+  color: #111;
 }
-table.params tr:nth-child(odd) td:last-child { background: #d9f0d0; color: #111; }
-table.params tr:nth-child(even) td:last-child { background: #ffffff; color: #111; }
+table.params tr:nth-child(odd) td { background: #f6f6f6; color: #111; }
+table.params tr:nth-child(even) td { background: #ffffff; color: #111; }
 
 .product-img-container, .dim-img-container {
   height: 78mm;
@@ -238,7 +238,7 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
         </div>
         {{/if}}
         <div class="note-img-container">
-          <img class="note-img" src="/datasheet-template/assets/note.jpeg" alt="Note">
+          <img class="note-img" src="/datasheet-template/assets/bert.png" alt="Note">
         </div>
       </div>
     </div>
