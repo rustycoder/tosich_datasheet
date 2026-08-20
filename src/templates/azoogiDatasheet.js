@@ -238,7 +238,7 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
         </div>
         {{/if}}
         <div class="note-img-container">
-          <img class="note-img" src="/datasheet-template/assets/sarah.png" alt="Note">
+          <img class="note-img" src="/datasheet-template/assets/ausport.png" alt="Note">
         </div>
       </div>
     </div>
@@ -247,7 +247,7 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
   <footer class="az-footer">
     <span class="f-item">
       <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/></svg>
-      sales@azoogi.com.au
+      sales@azoogi.com
     </span>
     <span class="f-item">
       <svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.9 15.9 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .58 3.6 1 1 0 0 1-.25 1z"/></svg>
