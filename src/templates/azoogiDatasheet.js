@@ -238,7 +238,7 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
         </div>
         {{/if}}
         <div class="note-img-container">
-          <img class="note-img" src="/datasheet-template/assets/auspost.png" alt="Note">
+          <img class="note-img" src="/datasheet-template/assets/unity_water.png" alt="Note">
         </div>
       </div>
     </div>
