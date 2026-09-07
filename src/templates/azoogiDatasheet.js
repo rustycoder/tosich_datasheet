@@ -199,6 +199,122 @@ table.params tr:nth-child(even) td { background: #ffffff; color: #111; }
   fill: #67d04e;
   flex-shrink: 0;
 }
+
+
+/* ---------- CSS for Project Card ---------- */
+
+  .sheet{
+    color:#000;
+    max-width:400px;
+    margin:0 auto;
+    background:#fff;
+    border:1px solid #ff2b1c;
+  }
+  .row {
+    border-bottom:1px solid #ff2b1c
+  }
+  .row:last-child {
+    border-bottom:0
+  }
+
+  /* ---------- Header ---------- */
+  .head {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:5px;
+    padding: 5px 10px;
+  }
+  .head h1 {
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:-.5px;
+    line-height:1.05;
+    margin: 0px;
+    padding-top: 5px;
+  }
+  .head .project {
+    margin: 0px;
+    padding-top: 5px;
+    font-size:8px;
+    font-weight:400;
+    letter-spacing:.3px;
+    text-transform:uppercase;
+  }
+  .head .project b {
+    font-weight:800
+  }
+  .logo {
+    flex:0 0 auto;
+    width:80px;
+  }
+  .logo img{
+    display:block;
+    width:100%;
+    height:auto
+  }
+
+  /* ---------- Check rows ---------- */
+  .checks {
+    padding: 5px 10px
+  }
+  .check {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:5px;
+    padding:2px 0;
+  }
+  .check-label {
+    font-size:8px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.2px;
+  }
+  .box {
+    flex:0 0 auto;
+    width:10px;
+    height:10px;
+    border:1px solid #ff2b1c;
+    background:#fff;
+  }
+  .line {
+    padding: 5px 10px;
+    font-size:8px;
+    font-weight:800;
+    text-transform:uppercase
+  }
+  .line span {
+    font-weight:400;
+    text-transform:none
+  }
+
+  /* ---------- Notes ---------- */
+  .notes { 
+    padding:5px 10px;
+  }
+  .notes ul {
+    list-style:none;
+    margin:0px;
+    padding:0px;
+  }
+  .notes li {
+    position:relative;
+    padding-left:10px;
+    font-size:6px;
+    line-height:1.5;
+  }
+  .notes li:last-child{margin-bottom:0}
+  .notes li::before{
+    content:"";
+    position:absolute;
+    left:0px;
+    top:.55em;
+    width:4px;
+    height:4px;
+    border-radius:50%;
+    background:#000;
+  }
 `;
 
 export const AZOOGI_DATASHEET_HTML = `<section class="page">
@@ -238,7 +354,39 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
         </div>
         {{/if}}
         <div class="note-img-container">
-          <img class="note-img" src="/datasheet-template/assets/white_city.jpeg" alt="Note">
+        <main class="sheet">
+          <section class="row head">
+            <div>
+              <h1>Lighting Technical Review</h1>
+              <div class="project"><b>Project:</b> Moriah Redevelopment</div>
+            </div>
+            <div class="logo">
+              <img src="/datasheet-template/assets/logo.png" alt="Azoogi Lighting Solutions logo">
+            </div>
+          </section>
+
+          <section class="row checks">
+            <div class="check">
+              <div class="check-label">Matched to Specifcation:</div>
+              <div class="box" role="checkbox" aria-checked="false" aria-label="Matched to specification"></div>
+            </div>
+            <div class="check">
+              <div class="check-label">Minor Variations:</div>
+              <div class="box" role="checkbox" aria-checked="false" aria-label="Minor variations"></div>
+            </div>
+          </section>
+
+          <section class="row line">Checked By: <span></span></section>
+          <section class="row line">Date: <span></span></section>
+
+          <section class="row notes">
+            <ul>
+              <li>This technical review indicates general conformity with the project design intent only.</li>
+              <li>Review does not constitute approval of dimensions, quantities, installation methods, site conditions, or regulatory compliance.</li>
+              <li>The Client and Electrical Subcontractor remain responsible for verification and compliance with all project documentation and applicable standards. Refer to the latest issued Azoogi working file and Luminaire Schedule for current product selections and revisions.</li>
+            </ul>
+          </section>
+          </main>
         </div>
       </div>
     </div>
