@@ -358,10 +358,10 @@ export const AZOOGI_DATASHEET_HTML = `<section class="page">
           <section class="row head">
             <div>
               <h1>Lighting Technical Review</h1>
-              <div class="project"><b>Project:</b>{{PROJECT_NAME}}</div>
+              <div class="project"><b>Project:</b> {{PROJECT}}</div>
             </div>
             <div class="logo">
-              <img src="/datasheet-template/assets/logo.png" alt="Azoogi Lighting Solutions logo">
+              <img src="/datasheet-template/assets/logo_dark.png" alt="Azoogi Lighting Solutions logo">
             </div>
           </section>
 
